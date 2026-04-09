@@ -1,5 +1,8 @@
 "use client";
 
+import Link from 'next/link';
+import { useState, useRef, useEffect } from 'react';
+
 import { 
   Search, 
   Bell, 
@@ -7,6 +10,10 @@ import {
   Plus,
   Menu,
   TrendingUp,
+  CheckCircle2,
+  Trash2,
+  AlertTriangle,
+  Info
 } from 'lucide-react';
 import styles from './Navbar.module.css';
 import Tooltip from '@/components/ui/Tooltip';
@@ -14,8 +21,22 @@ import { useTransactions } from '@/context/TransactionContext';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export default function Navbar() {
-  const { openAddModal, userSettings, toggleSidebar } = useTransactions();
+  const { openAddModal, userSettings, toggleSidebar, notifications, markAsRead, clearNotifications } = useTransactions();
   const t = useTranslation();
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setIsNotifOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <header className={styles.navbar}>
@@ -24,12 +45,14 @@ export default function Navbar() {
           <Menu size={20} />
         </button>
         
-        <div className={styles.brand}>
-          <div className={styles.logoIcon}>
-            <TrendingUp size={20} color="var(--primary)" />
-          </div>
-          <span className="text-gradient">ExpensePro</span>
-        </div>
+        <Tooltip text={t.nav.dashboard} position="bottom">
+          <Link href="/" className={styles.brand} style={{ textDecoration: 'none' }}>
+            <div className={styles.logoIcon}>
+              <TrendingUp size={20} color="var(--primary)" />
+            </div>
+            <span className="text-gradient">ExpensePro</span>
+          </Link>
+        </Tooltip>
 
         <div className={styles.searchBar}>
           <Search size={18} className={styles.searchIcon} />
@@ -49,12 +72,54 @@ export default function Navbar() {
           </button>
         </Tooltip>
         
-        <Tooltip text={t.navbar.notifications} position="bottom">
-          <div className={styles.iconBtn}>
-            <Bell size={20} />
-            <span className={styles.badge} />
-          </div>
-        </Tooltip>
+        <div className={styles.notificationContainer} ref={notifRef}>
+          <Tooltip text={t.navbar.notifications} position="bottom">
+            <div className={`${styles.iconBtn} ${isNotifOpen ? styles.active : ''}`} onClick={() => setIsNotifOpen(!isNotifOpen)}>
+              <Bell size={20} />
+              {unreadCount > 0 && <span className={styles.badge}>{unreadCount > 9 ? '9+' : unreadCount}</span>}
+            </div>
+          </Tooltip>
+          
+          {isNotifOpen && (
+            <div className={`glass-card ${styles.notifDropdown}`}>
+              <div className={styles.notifHeader}>
+                <h3>{t.navbar.notifications}</h3>
+                {notifications.length > 0 && (
+                  <button className={styles.clearBtn} onClick={clearNotifications}>
+                    <Trash2 size={14} /> Clear All
+                  </button>
+                )}
+              </div>
+              
+              <div className={styles.notifBody}>
+                {notifications.length === 0 ? (
+                  <div className={styles.emptyNotifs}>
+                    <Bell size={24} className={styles.emptyIcon} />
+                    <p>No new notifications</p>
+                  </div>
+                ) : (
+                  notifications.map(notif => (
+                    <div key={notif.id} className={`${styles.notifItem} ${!notif.read ? styles.unread : ''}`} onClick={() => markAsRead(notif.id)}>
+                      <div className={styles.notifIconWrapper} data-type={notif.type}>
+                        {notif.type === 'alert' && <AlertTriangle size={16} />}
+                        {notif.type === 'warning' && <AlertTriangle size={16} />}
+                        {notif.type === 'info' && <Info size={16} />}
+                      </div>
+                      <div className={styles.notifContent}>
+                        <h4>{notif.title}</h4>
+                        <p>{notif.message}</p>
+                        <span className={styles.notifTime}>
+                          {new Date(notif.date).toLocaleDateString()} {new Date(notif.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        </span>
+                      </div>
+                      {!notif.read && <div className={styles.unreadDot} />}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         <Tooltip text={t.navbar.userProfile} position="bottom">
           <div className={styles.profile}>

@@ -15,7 +15,7 @@ const ICON_MAP: Record<string, any> = {
 };
 
 export default function Budgets() {
-  const { budgets, getCategorySpending, transactions, updateBudget, addBudget } = useTransactions();
+  const { budgets, getCategorySpending, transactions, updateBudget, addBudget, currencySymbol } = useTransactions();
   const t = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
@@ -81,7 +81,7 @@ export default function Budgets() {
           <div className={styles.summaryText}>
             <h3>{t.budgets.monthlyStatus}</h3>
             <p className={styles.summaryDetail}>
-              {t.budgets.spent}: <strong>${totalSpent.toLocaleString()}</strong> / <strong>${totalLimit.toLocaleString()}</strong>
+              {t.budgets.spent}: <strong>{currencySymbol}{totalSpent.toLocaleString()}</strong> / <strong>{currencySymbol}{totalLimit.toLocaleString()}</strong>
             </p>
           </div>
           <div className={styles.overallProgressRing}>
@@ -130,8 +130,8 @@ export default function Budgets() {
               </div>
               <div className={styles.progressSection}>
                 <div className={styles.progressLabels}>
-                  <span>${spent.toLocaleString()} {t.budgets.spent}</span>
-                  <span>${budget.limit.toLocaleString()} {t.budgets.limit}</span>
+                  <span>{currencySymbol}{spent.toLocaleString()} {t.budgets.spent}</span>
+                  <span>{currencySymbol}{budget.limit.toLocaleString()} {t.budgets.limit}</span>
                 </div>
                 <div className={styles.progressBar}>
                   <div className={styles.progressFill}
@@ -141,9 +141,9 @@ export default function Budgets() {
               <div className={styles.cardFooter}>
                 <div className={styles.remaining}>
                   {isOver ? (
-                    <span className={styles.overText}>{t.budgets.exceeded} ${(spent - budget.limit).toLocaleString()}</span>
+                    <span className={styles.overText}>{t.budgets.exceeded} {currencySymbol}{(spent - budget.limit).toLocaleString()}</span>
                   ) : (
-                    <span className={styles.underText}>${(budget.limit - spent).toLocaleString()} {t.budgets.remaining}</span>
+                    <span className={styles.underText}>{currencySymbol}{(budget.limit - spent).toLocaleString()} {t.budgets.remaining}</span>
                   )}
                 </div>
                 <Tooltip text={t.budgets.editBudget}>
@@ -165,7 +165,7 @@ export default function Budgets() {
           </div>
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
-              <label>{t.budgets.budgetLimit} ($)</label>
+              <label>{t.budgets.budgetLimit} ({currencySymbol})</label>
               <input type="number" className="glass-input" placeholder="0.00" step="0.01"
                 value={formData.limit} onChange={(e) => setFormData({ ...formData, limit: e.target.value })} required />
             </div>

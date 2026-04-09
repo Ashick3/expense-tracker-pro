@@ -16,7 +16,7 @@ const ICON_MAP: Record<string, any> = {
 };
 
 export default function Accounts() {
-  const { accounts, addAccount, updateAccount, deleteAccount } = useTransactions();
+  const { accounts, addAccount, updateAccount, deleteAccount, currencySymbol } = useTransactions();
   const t = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
@@ -79,7 +79,7 @@ export default function Accounts() {
               <div className={styles.cardContent}>
                 <h3>{acc.name}</h3>
                 <p className={styles.accType}>{acc.type}</p>
-                <p className={styles.balance}>${acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                <p className={styles.balance}>{currencySymbol}{acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
               </div>
               <div className={styles.cardFooter}>
                 <Tooltip text={t.accounts.editAccount}>
@@ -128,7 +128,7 @@ export default function Accounts() {
             </div>
           </div>
           <div className={styles.formGroup}>
-            <label>{t.accounts.balance} ($)</label>
+            <label>{t.accounts.balance} ({currencySymbol})</label>
             <input type="number" className="glass-input" placeholder="0.00" step="0.01"
               value={formData.balance} onChange={(e) => setFormData({ ...formData, balance: e.target.value })} required />
           </div>

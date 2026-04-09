@@ -19,7 +19,7 @@ export default function Tooltip({ text, children, position = 'top' }: TooltipPro
       onMouseLeave={() => setIsVisible(false)}
     >
       {children}
-      {isVisible && (
+      {isVisible && text && (
         <div className={`${styles.tooltip} ${styles[position]}`}>
           {text}
           <div className={styles.arrow} />

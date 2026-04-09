@@ -20,6 +20,15 @@ export interface Budget {
   color: string;
 }
 
+export interface AppNotification {
+  id: string;
+  title: string;
+  message: string;
+  date: string;
+  read: boolean;
+  type: 'alert' | 'warning' | 'info';
+}
+
 export interface Account {
   id: string;
   name: string;
@@ -36,6 +45,7 @@ export interface UserSettings {
   notifySummary: boolean;
   theme: 'dark' | 'light';
   language: 'en' | 'ta';
+  currency: 'USD' | 'INR';
 }
 
 interface TransactionContextType {
@@ -63,6 +73,11 @@ interface TransactionContextType {
   updateUserSettings: (settings: Partial<UserSettings>) => void;
   isSidebarCollapsed: boolean;
   toggleSidebar: () => void;
+  currencySymbol: string;
+  notifications: AppNotification[];
+  addNotification: (notif: Omit<AppNotification, 'id' | 'date' | 'read'>) => void;
+  markAsRead: (id: string) => void;
+  clearNotifications: () => void;
 }
 
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
@@ -90,7 +105,8 @@ const INITIAL_SETTINGS: UserSettings = {
   notifyBudget: true,
   notifySummary: false,
   theme: 'dark',
-  language: 'en'
+  language: 'en',
+  currency: 'USD'
 };
 
 const INITIAL_SIDEBAR_STATE = false;
@@ -101,6 +117,7 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
   const [accounts, setAccounts] = useState<Account[]>(INITIAL_ACCOUNTS);
   const [userSettings, setUserSettings] = useState<UserSettings>(INITIAL_SETTINGS);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(INITIAL_SIDEBAR_STATE);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
@@ -112,6 +129,7 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
     const savedAccounts = localStorage.getItem('expense_pro_accounts');
     const savedSettings = localStorage.getItem('expense_pro_settings');
     const savedSidebar = localStorage.getItem('expense_pro_sidebar_collapsed');
+    const savedNotifications = localStorage.getItem('expense_pro_notifications');
 
     if (savedTransactions) {
       setTransactions(JSON.parse(savedTransactions));
@@ -135,6 +153,10 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
       setIsSidebarCollapsed(JSON.parse(savedSidebar));
     }
 
+    if (savedNotifications) {
+      setNotifications(JSON.parse(savedNotifications));
+    }
+
     setIsLoaded(true);
   }, []);
 
@@ -146,11 +168,69 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
       localStorage.setItem('expense_pro_accounts', JSON.stringify(accounts));
       localStorage.setItem('expense_pro_settings', JSON.stringify(userSettings));
       localStorage.setItem('expense_pro_sidebar_collapsed', JSON.stringify(isSidebarCollapsed));
+      localStorage.setItem('expense_pro_notifications', JSON.stringify(notifications));
     }
-  }, [transactions, budgets, accounts, userSettings, isSidebarCollapsed, isLoaded]);
+  }, [transactions, budgets, accounts, userSettings, isSidebarCollapsed, notifications, isLoaded]);
+
+  const addNotification = (notif: Omit<AppNotification, 'id' | 'date' | 'read'>) => {
+    const newNotif: AppNotification = {
+      ...notif,
+      id: Math.random().toString(36).substr(2, 9),
+      date: new Date().toISOString(),
+      read: false
+    };
+    setNotifications(prev => [newNotif, ...prev]);
+  };
+
+  const markAsRead = (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const clearNotifications = () => {
+    setNotifications([]);
+  };
+
+  const checkBudgetExceedance = (tx: Omit<Transaction, 'id'>, currentTransactions: Transaction[]) => {
+    if (tx.type !== 'expense' || !userSettings.notifyBudget) return;
+
+    const budget = budgets.find(b => b.category === tx.category);
+    if (!budget) return;
+
+    const txDate = new Date(tx.date);
+    const currentMonth = txDate.getMonth();
+    const currentYear = txDate.getFullYear();
+
+    // Calculate current spending for this category in the same month
+    let previousSpending = currentTransactions
+      .filter(t => t.category === tx.category && 
+                  t.type === 'expense' &&
+                  new Date(t.date).getMonth() === currentMonth &&
+                  new Date(t.date).getFullYear() === currentYear)
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const newTotal = previousSpending + tx.amount;
+
+    if (newTotal > budget.limit) {
+      const exceededAmount = (newTotal - budget.limit).toFixed(2);
+      const symbol = userSettings.currency === 'INR' ? '₹' : '$';
+      addNotification({
+        title: 'Budget Exceeded',
+        message: `You have exceeded your ${budget.category} budget limit by ${symbol}${exceededAmount}.`,
+        type: 'alert'
+      });
+    } else if (newTotal >= budget.limit * 0.8 && previousSpending < budget.limit * 0.8) {
+      const symbol = userSettings.currency === 'INR' ? '₹' : '$';
+      addNotification({
+        title: 'Budget Warning',
+        message: `You are approaching your ${budget.category} budget limit (${symbol}${newTotal.toFixed(2)} of ${symbol}${budget.limit}).`,
+        type: 'warning'
+      });
+    }
+  };
 
   const addTransaction = (tx: Omit<Transaction, 'id'>) => {
     const newTx = { ...tx, id: Math.random().toString(36).substr(2, 9) };
+    checkBudgetExceedance(tx, transactions);
     setTransactions(prev => [newTx, ...prev]);
   };
 
@@ -159,6 +239,9 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
   };
 
   const updateTransaction = (id: string, updatedTx: Omit<Transaction, 'id'>) => {
+    // Check budget without the old transaction amount
+    const otherTransactions = transactions.filter(t => t.id !== id);
+    checkBudgetExceedance(updatedTx, otherTransactions);
     setTransactions(prev => prev.map(tx => tx.id === id ? { ...updatedTx, id } : tx));
   };
 
@@ -319,7 +402,12 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
       userSettings,
       updateUserSettings,
       isSidebarCollapsed,
-      toggleSidebar
+      toggleSidebar,
+      currencySymbol: userSettings.currency === 'INR' ? '₹' : '$',
+      notifications,
+      addNotification,
+      markAsRead,
+      clearNotifications
     }}>
       {children}
     </TransactionContext.Provider>

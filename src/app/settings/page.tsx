@@ -211,6 +211,48 @@ export default function Settings() {
               </button>
             </div>
           </div>
+
+          <div className={styles.sectionHeader} style={{ marginTop: '32px' }}>
+            <Globe className={styles.icon} size={20} />
+            <h3>{t.settings.currency}</h3>
+          </div>
+          <div className={styles.sectionContent}>
+            <p style={{ fontSize: '0.9rem', color: 'var(--muted)', marginBottom: '16px' }}>
+              {t.settings.currencyDesc}
+            </p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => updateUserSettings({ currency: 'USD' })}
+                style={{
+                  padding: '10px 24px',
+                  borderRadius: '10px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  border: '2px solid',
+                  transition: 'all 0.2s ease',
+                  background: userSettings.currency === 'USD' ? 'var(--primary)' : 'var(--bg-surface)',
+                  color: userSettings.currency === 'USD' ? 'white' : 'var(--text-main)',
+                  borderColor: userSettings.currency === 'USD' ? 'var(--primary)' : 'var(--card-border)',
+                }}>
+                $ Dollar
+              </button>
+              <button
+                onClick={() => updateUserSettings({ currency: 'INR' })}
+                style={{
+                  padding: '10px 24px',
+                  borderRadius: '10px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  border: '2px solid',
+                  transition: 'all 0.2s ease',
+                  background: userSettings.currency === 'INR' ? 'var(--primary)' : 'var(--bg-surface)',
+                  color: userSettings.currency === 'INR' ? 'white' : 'var(--text-main)',
+                  borderColor: userSettings.currency === 'INR' ? 'var(--primary)' : 'var(--card-border)',
+                }}>
+                ₹ Rupee
+              </button>
+            </div>
+          </div>
         </section>
 
         {/* Data Management Section */}

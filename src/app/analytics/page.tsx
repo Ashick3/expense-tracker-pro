@@ -12,7 +12,7 @@ import styles from './Analytics.module.css';
 import StatCard from '@/components/ui/StatCard';
 
 export default function Analytics() {
-  const { transactions, budgets, getTotals } = useTransactions();
+  const { transactions, budgets, getTotals, currencySymbol } = useTransactions();
   const t = useTranslation();
   const { income, expenses } = getTotals();
 
@@ -68,8 +68,8 @@ export default function Analytics() {
       </header>
 
       <div className={styles.statsGrid}>
-        <StatCard title={t.analytics.income} value={`$${income.toLocaleString()}`} icon={TrendingUp} color="var(--success)" />
-        <StatCard title={t.analytics.expenses} value={`$${expenses.toLocaleString()}`} icon={TrendingDown} color="var(--error)" />
+        <StatCard title={t.analytics.income} value={`${currencySymbol}${income.toLocaleString()}`} icon={TrendingUp} color="var(--success)" />
+        <StatCard title={t.analytics.expenses} value={`${currencySymbol}${expenses.toLocaleString()}`} icon={TrendingDown} color="var(--error)" />
         <StatCard
           title={t.analytics.savingsRate}
           value={`${monthlyInsights.savingsRate}%`}
@@ -79,7 +79,7 @@ export default function Analytics() {
         />
         <StatCard
           title={t.analytics.dailyBurnRate}
-          value={`$${monthlyInsights.avgDailySpend.toLocaleString()}`}
+          value={`${currencySymbol}${monthlyInsights.avgDailySpend.toLocaleString()}`}
           change="avg/day" isPositive={false}
           icon={Zap} color="var(--warning)"
         />
@@ -93,7 +93,7 @@ export default function Analytics() {
               <LineChart data={trendData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                 <XAxis dataKey="date" stroke="var(--muted)" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--muted)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v}`} />
+                <YAxis stroke="var(--muted)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${currencySymbol}${v}`} />
                 <RechartsTooltip contentStyle={tooltipStyle} itemStyle={itemStyle} labelStyle={{ color: 'var(--muted)', marginBottom: '4px' }} />
                 <Line type="monotone" dataKey="amount" stroke="var(--primary)" strokeWidth={4} dot={false} animationDuration={1500} />
               </LineChart>

@@ -46,7 +46,7 @@ const ICON_MAP: Record<string, any> = {
 };
 
 export default function Dashboard() {
-  const { transactions, getTotals, budgets, userSettings } = useTransactions();
+  const { transactions, getTotals, budgets, userSettings, currencySymbol } = useTransactions();
   const t = useTranslation();
   const { balance, income, expenses } = getTotals();
 
@@ -107,14 +107,14 @@ export default function Dashboard() {
       <div className={styles.statsGrid}>
         <StatCard 
           title={t.dashboard.totalBalance}
-          value={`$${balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} 
+          value={`${currencySymbol}${balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} 
           change="0" 
           isPositive 
           icon={DollarSign} 
         />
         <StatCard 
           title={t.dashboard.monthlyIncome}
-          value={`$${income.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} 
+          value={`${currencySymbol}${income.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} 
           change="0" 
           isPositive 
           icon={TrendingUp} 
@@ -122,7 +122,7 @@ export default function Dashboard() {
         />
         <StatCard 
           title={t.dashboard.monthlyExpenses}
-          value={`$${expenses.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} 
+          value={`${currencySymbol}${expenses.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} 
           change="0" 
           isPositive={false} 
           icon={TrendingDown} 
@@ -150,7 +150,7 @@ export default function Dashboard() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                 <XAxis dataKey="name" stroke="var(--muted)" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--muted)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v}`} />
+                <YAxis stroke="var(--muted)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${currencySymbol}${v}`} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: 'var(--secondary)', border: '1px solid var(--card-border)', borderRadius: '8px' }}
                   itemStyle={{ color: 'var(--foreground)' }}
@@ -182,7 +182,7 @@ export default function Dashboard() {
                     <div key={item.name} className={styles.legendItem}>
                       <span className={styles.dot} style={{ backgroundColor: item.color }} />
                       <span className={styles.name}>{item.name}</span>
-                      <span className={styles.percent}>${item.value.toFixed(0)}</span>
+                      <span className={styles.percent}>{currencySymbol}{item.value.toFixed(0)}</span>
                     </div>
                   ))}
                 </div>
@@ -217,7 +217,7 @@ export default function Dashboard() {
                     </div>
                     <div className={styles.txDetails}>
                       <p className={tx.type === 'income' ? styles.income : styles.expense}>
-                        {tx.type === 'income' ? '+' : '-'}${Math.abs(tx.amount).toLocaleString()}
+                        {tx.type === 'income' ? '+' : '-'}{currencySymbol}{Math.abs(tx.amount).toLocaleString()}
                       </p>
                       <p className={styles.txDate}>{tx.date}</p>
                     </div>
@@ -248,7 +248,7 @@ export default function Dashboard() {
               />
             </div>
             <div className={styles.progressLabels}>
-              <span>${expenses.toLocaleString()} {t.dashboard.spent}</span>
+              <span>{currencySymbol}{expenses.toLocaleString()} {t.dashboard.spent}</span>
               <span>{t.dashboard.overallVsIncome}</span>
             </div>
           </div>

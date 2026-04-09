@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 
 import { 
@@ -13,7 +14,16 @@ import {
   CheckCircle2,
   Trash2,
   AlertTriangle,
-  Info
+  Info,
+  X,
+  LayoutDashboard,
+  Receipt,
+  Wallet,
+  PieChart,
+  CreditCard,
+  Tags,
+  Settings,
+  LogOut,
 } from 'lucide-react';
 import styles from './Navbar.module.css';
 import Tooltip from '@/components/ui/Tooltip';
@@ -23,10 +33,22 @@ import { useTranslation } from '@/hooks/useTranslation';
 export default function Navbar() {
   const { openAddModal, userSettings, toggleSidebar, notifications, markAsRead, clearNotifications } = useTransactions();
   const t = useTranslation();
+  const pathname = usePathname();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  const mobileNavItems = [
+    { icon: LayoutDashboard, label: t.nav.dashboard, href: '/' },
+    { icon: Receipt, label: t.nav.transactions, href: '/transactions' },
+    { icon: Wallet, label: t.nav.budgets, href: '/budgets' },
+    { icon: PieChart, label: t.nav.analytics, href: '/analytics' },
+    { icon: CreditCard, label: t.nav.accounts, href: '/accounts' },
+    { icon: Tags, label: t.nav.categories, href: '/categories' },
+    { icon: Settings, label: t.nav.settings, href: '/settings' },
+  ];
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -39,9 +61,10 @@ export default function Navbar() {
   }, []);
 
   return (
+    <>
     <header className={styles.navbar}>
       <div className={styles.leftSection}>
-        <button className={styles.toggleBtn} onClick={toggleSidebar} aria-label="Toggle sidebar">
+        <button className={styles.toggleBtn} onClick={() => { toggleSidebar(); setIsMobileDrawerOpen(o => !o); }} aria-label="Toggle sidebar">
           <Menu size={20} />
         </button>
         
@@ -134,5 +157,42 @@ export default function Navbar() {
         </Tooltip>
       </div>
     </header>
+
+    {/* Mobile Drawer */}
+    {isMobileDrawerOpen && (
+      <div className={styles.drawerOverlay} onClick={() => setIsMobileDrawerOpen(false)}>
+        <div className={styles.drawer} onClick={e => e.stopPropagation()}>
+          <div className={styles.drawerHeader}>
+            <span className="text-gradient" style={{ fontWeight: 700, fontSize: '1.2rem' }}>ExpensePro</span>
+            <button className={styles.drawerClose} onClick={() => setIsMobileDrawerOpen(false)}>
+              <X size={20} />
+            </button>
+          </div>
+          <nav className={styles.drawerNav}>
+            {mobileNavItems.map(item => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`${styles.drawerItem} ${isActive ? styles.drawerActive : ''}`}
+                  onClick={() => setIsMobileDrawerOpen(false)}
+                >
+                  <item.icon size={20} />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+          <div className={styles.drawerFooter}>
+            <button className={styles.drawerLogout}>
+              <LogOut size={18} />
+              <span>{t.nav.logout}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

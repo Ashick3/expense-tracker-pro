@@ -343,7 +343,6 @@ select.glass-input {
 @media (max-width: 768px) {
   .content-wrapper {
     padding: 16px;
-    padding-bottom: 80px; /* clearance for bottom nav */
   }
 }
 

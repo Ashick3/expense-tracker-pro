@@ -22,7 +22,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
           {children}
         </main>
       </div>
-      <MobileNav />
+      {/* <MobileNav /> */}
       <GlobalTransactionModal />
     </div>
   );

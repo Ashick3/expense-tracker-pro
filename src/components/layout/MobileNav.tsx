@@ -2,14 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Receipt, Wallet, PieChart, CreditCard, Plus, Settings } from 'lucide-react';
+import { LayoutDashboard, Receipt, Wallet, PieChart, CreditCard, Settings } from 'lucide-react';
 import styles from './MobileNav.module.css';
-import { useTransactions } from '@/context/TransactionContext';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export default function MobileNav() {
   const pathname = usePathname();
-  const { openAddModal } = useTransactions();
   const t = useTranslation();
 
   const navItems = [
@@ -32,10 +30,6 @@ export default function MobileNav() {
           </Link>
         );
       })}
-      <button className={styles.addItem} onClick={() => openAddModal()}>
-        <Plus size={22} />
-        <span>{t.navbar.addNew}</span>
-      </button>
     </nav>
   );
 }

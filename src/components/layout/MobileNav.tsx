@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Receipt, Wallet, PieChart, CreditCard, Plus } from 'lucide-react';
+import { LayoutDashboard, Receipt, Wallet, PieChart, CreditCard, Plus, Settings } from 'lucide-react';
 import styles from './MobileNav.module.css';
 import { useTransactions } from '@/context/TransactionContext';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -18,6 +18,7 @@ export default function MobileNav() {
     { icon: Wallet, label: t.nav.budgets, href: '/budgets' },
     { icon: PieChart, label: t.nav.analytics, href: '/analytics' },
     { icon: CreditCard, label: t.nav.accounts, href: '/accounts' },
+    { icon: Settings, label: t.nav.settings, href: '/settings' },
   ];
 
   return (

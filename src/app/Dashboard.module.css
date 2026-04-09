@@ -1,0 +1,291 @@
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: 1rem;
+  margin-top: 4px;
+}
+
+.exportBtn {
+  background: var(--bg-surface);
+  border: 1px solid var(--card-border);
+  color: var(--text-main);
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.exportBtn:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--glass-border);
+}
+
+.statsGrid {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.chartsGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+.chartContainer {
+  padding: 24px;
+}
+
+.chartHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.chartLegend {
+  display: flex;
+  gap: 16px;
+  font-size: 0.8rem;
+}
+
+.incomeDot, .expenseDot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+}
+
+.incomeDot::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--primary);
+  border-radius: 50%;
+}
+
+.expenseDot::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--error);
+  border-radius: 50%;
+}
+
+.pieContainer {
+  padding: 24px;
+}
+
+.pieBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.pieLegend {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.85rem;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.name {
+  color: var(--muted);
+  flex: 1;
+}
+
+.percent {
+  font-weight: 600;
+  color: var(--text-title);
+}
+
+.bottomSection {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 24px;
+}
+
+.transactionsContainer, .goalsContainer {
+  padding: 24px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.viewAll {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.transactionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.transactionItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  transition: background 0.2s ease;
+}
+
+.transactionItem:hover {
+  background: var(--bg-surface-hover);
+}
+
+.txIcon {
+  width: 44px;
+  height: 44px;
+  background: var(--bg-surface);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+}
+
+.txInfo {
+  flex: 1;
+}
+
+.txName {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-title);
+}
+
+.txCategory {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.txDetails {
+  text-align: right;
+  margin-right: 12px;
+}
+
+.income {
+  color: var(--success);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.expense {
+  color: var(--text-main);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.txDate {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.moreBtn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.goalsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.goalSubtitle {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.progressWrapper {
+  margin-top: 10px;
+}
+
+.progressBar {
+  width: 100%;
+  height: 10px;
+  background: var(--bg-surface);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary) 0%, #a78bfa 100%);
+  border-radius: 5px;
+}
+
+.progressLabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.goalAlert {
+  margin-top: auto;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  color: var(--success);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+@media (max-width: 1280px) {
+  .chartsGrid, .bottomSection {
+    grid-template-columns: 1fr;
+  }
+}

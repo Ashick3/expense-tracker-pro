@@ -1,0 +1,241 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: 1.1rem;
+  margin-top: 4px;
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 800px;
+}
+
+.section {
+  padding: 32px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  color: var(--text-title);
+}
+
+.icon {
+  color: var(--primary);
+}
+
+.sectionHeader h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.sectionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.dataAction {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+}
+
+.actionTitle {
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.actionDesc {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.dangerBtn {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dangerBtn:hover {
+  background: var(--error);
+  color: white;
+}
+
+.secondaryBtn {
+  background: var(--bg-surface);
+  color: var(--text-main);
+  border: 1px solid var(--card-border);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.secondaryBtn:hover {
+  background: var(--bg-surface-hover);
+}
+
+.toggleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--muted);
+}
+
+.toggle {
+  appearance: none;
+  width: 44px;
+  height: 22px;
+  background: var(--bg-surface-hover);
+  border-radius: 20px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle:checked {
+  background: var(--primary);
+}
+
+.toggle::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.toggle:checked::before {
+  left: 25px;
+}
+
+/* Modal Styles */
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 10px 0;
+}
+
+.alertIcon {
+  color: #ef4444;
+  margin-bottom: 20px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+.confirmText {
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+.modalActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+}
+
+.cancelBtn {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  border: 1px solid var(--card-border);
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.deleteConfirmBtn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.deleteConfirmBtn:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.successIcon {
+  color: #10b981;
+  margin-bottom: 20px;
+}
+
+.successText {
+  color: var(--text-main);
+  font-weight: 500;
+  margin-bottom: 32px;
+}
+
+.primaryBtn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.primaryBtn:hover {
+  background: var(--primary-hover);
+}

@@ -1,0 +1,15 @@
+.innerWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin-left: var(--sidebar-width);
+  transition: margin-left 0.3s ease;
+}
+
+/* Mobile: sidebar becomes an overlay, no margin needed */
+@media (max-width: 768px) {
+  .innerWrapper {
+    margin-left: 0 !important;
+  }
+}

@@ -40,9 +40,7 @@
 .header h2 {
   font-size: 1.5rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #fff 0%, #a78bfa 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-title);
 }
 
 .closeBtn {
@@ -60,8 +58,8 @@
 }
 
 .closeBtn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+  background: var(--bg-surface-hover);
+  color: var(--text-title);
 }
 
 .content {

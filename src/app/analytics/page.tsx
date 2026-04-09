@@ -12,9 +12,15 @@ import styles from './Analytics.module.css';
 import StatCard from '@/components/ui/StatCard';
 
 export default function Analytics() {
-  const { transactions, budgets, getTotals, currencySymbol } = useTransactions();
+  const { transactions, budgets, getTotals, currencySymbol, userSettings } = useTransactions();
   const t = useTranslation();
   const { income, expenses } = getTotals();
+  const isLight = userSettings.theme === 'light';
+  const gridStroke = isLight ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.05)';
+  const tooltipBg = isLight ? '#ffffff' : 'var(--secondary)';
+  const tooltipBorder = isLight ? 'rgba(0,0,0,0.1)' : 'var(--card-border)';
+  const tooltipColor = isLight ? '#0f172a' : 'var(--foreground)';
+  const cursorFill = isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.02)';
 
   const monthlyInsights = useMemo(() => {
     const now = new Date();
@@ -57,8 +63,8 @@ export default function Analytics() {
     });
   }, [transactions]);
 
-  const tooltipStyle = { backgroundColor: 'var(--secondary)', border: '1px solid var(--card-border)', borderRadius: '8px' };
-  const itemStyle = { color: 'var(--foreground)' };
+  const tooltipStyle = { backgroundColor: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: '8px', color: tooltipColor };
+  const itemStyle = { color: tooltipColor };
 
   return (
     <div className={styles.container}>
@@ -91,7 +97,7 @@ export default function Analytics() {
           <div className={styles.chartWrapper}>
             <ResponsiveContainer width="100%" height={350}>
               <LineChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
                 <XAxis dataKey="date" stroke="var(--muted)" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="var(--muted)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${currencySymbol}${v}`} />
                 <RechartsTooltip contentStyle={tooltipStyle} itemStyle={itemStyle} labelStyle={{ color: 'var(--muted)', marginBottom: '4px' }} />
@@ -106,10 +112,10 @@ export default function Analytics() {
           <div className={styles.chartWrapper}>
             <ResponsiveContainer width="100%" height={350}>
               <BarChart data={categoryData} layout="vertical" margin={{ left: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} horizontal={false} />
                 <XAxis type="number" hide />
                 <YAxis dataKey="name" type="category" stroke="var(--muted)" fontSize={12} tickLine={false} axisLine={false} width={100} />
-                <RechartsTooltip contentStyle={tooltipStyle} itemStyle={itemStyle} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
+                <RechartsTooltip contentStyle={tooltipStyle} itemStyle={itemStyle} cursor={{ fill: cursorFill }} />
                 <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>
                   {categoryData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />

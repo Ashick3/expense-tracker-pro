@@ -11,6 +11,7 @@ import {
   LogOut,
   TrendingUp,
   CreditCard,
+  Tags,
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
 import Tooltip from '@/components/ui/Tooltip';
@@ -28,6 +29,7 @@ export default function Sidebar() {
     { icon: Wallet, label: t.nav.budgets, href: '/budgets' },
     { icon: PieChart, label: t.nav.analytics, href: '/analytics' },
     { icon: CreditCard, label: t.nav.accounts, href: '/accounts' },
+    { icon: Tags, label: t.nav.categories, href: '/categories' },
     { icon: Settings, label: t.nav.settings, href: '/settings' },
   ];
 

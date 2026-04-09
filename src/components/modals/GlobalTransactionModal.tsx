@@ -11,7 +11,10 @@ export default function GlobalTransactionModal() {
     closeAddModal, 
     addTransaction, 
     updateTransaction, 
-    editingTransaction 
+    editingTransaction,
+    budgets,
+    transactions,
+    categories
   } = useTransactions();
 
   const [formData, setFormData] = useState({
@@ -109,18 +112,15 @@ export default function GlobalTransactionModal() {
         <div className={styles.formRow}>
           <div className={styles.formGroup}>
             <label>Category</label>
-            <select 
+            <select
               className="glass-input"
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              required
             >
-              <option>Housing</option>
-              <option>Food & Drink</option>
-              <option>Transport</option>
-              <option>Shopping</option>
-              <option>Healthcare</option>
-              <option>Entertainment</option>
-              <option>Income</option>
+              {categories.map(cat => (
+                <option key={cat.id} value={cat.name}>{cat.name}</option>
+              ))}
             </select>
           </div>
           <div className={styles.formGroup}>

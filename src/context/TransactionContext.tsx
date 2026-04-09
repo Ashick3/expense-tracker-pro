@@ -20,6 +20,12 @@ export interface Budget {
   color: string;
 }
 
+export interface TransactionCategory {
+  id: string;
+  name: string;
+  color: string;
+}
+
 export interface AppNotification {
   id: string;
   title: string;
@@ -78,6 +84,10 @@ interface TransactionContextType {
   addNotification: (notif: Omit<AppNotification, 'id' | 'date' | 'read'>) => void;
   markAsRead: (id: string) => void;
   clearNotifications: () => void;
+  categories: TransactionCategory[];
+  addCategory: (cat: Omit<TransactionCategory, 'id'>) => void;
+  updateCategory: (id: string, cat: Omit<TransactionCategory, 'id'>) => void;
+  deleteCategory: (id: string) => void;
 }
 
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
@@ -106,8 +116,18 @@ const INITIAL_SETTINGS: UserSettings = {
   notifySummary: false,
   theme: 'dark',
   language: 'en',
-  currency: 'USD'
+  currency: 'INR'
 };
+
+const INITIAL_CATEGORIES: TransactionCategory[] = [
+  { id: 'cat_housing', name: 'Housing', color: '#7c3aed' },
+  { id: 'cat_food', name: 'Food & Drink', color: '#ef4444' },
+  { id: 'cat_transport', name: 'Transport', color: '#10b981' },
+  { id: 'cat_shopping', name: 'Shopping', color: '#f59e0b' },
+  { id: 'cat_health', name: 'Healthcare', color: '#3b82f6' },
+  { id: 'cat_entertainment', name: 'Entertainment', color: '#ec4899' },
+  { id: 'cat_income', name: 'Income', color: '#10b981' },
+];
 
 const INITIAL_SIDEBAR_STATE = false;
 
@@ -115,6 +135,7 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>(INITIAL_BUDGETS);
   const [accounts, setAccounts] = useState<Account[]>(INITIAL_ACCOUNTS);
+  const [categories, setCategories] = useState<TransactionCategory[]>(INITIAL_CATEGORIES);
   const [userSettings, setUserSettings] = useState<UserSettings>(INITIAL_SETTINGS);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(INITIAL_SIDEBAR_STATE);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -127,6 +148,7 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
     const savedTransactions = localStorage.getItem('expense_pro_transactions');
     const savedBudgets = localStorage.getItem('expense_pro_budgets');
     const savedAccounts = localStorage.getItem('expense_pro_accounts');
+    const savedCategories = localStorage.getItem('expense_pro_categories');
     const savedSettings = localStorage.getItem('expense_pro_settings');
     const savedSidebar = localStorage.getItem('expense_pro_sidebar_collapsed');
     const savedNotifications = localStorage.getItem('expense_pro_notifications');
@@ -143,6 +165,12 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
 
     if (savedAccounts) {
       setAccounts(JSON.parse(savedAccounts));
+    }
+
+    if (savedCategories) {
+      setCategories(JSON.parse(savedCategories));
+    } else {
+      setCategories(INITIAL_CATEGORIES);
     }
 
     if (savedSettings) {
@@ -166,11 +194,12 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
       localStorage.setItem('expense_pro_transactions', JSON.stringify(transactions));
       localStorage.setItem('expense_pro_budgets', JSON.stringify(budgets));
       localStorage.setItem('expense_pro_accounts', JSON.stringify(accounts));
+      localStorage.setItem('expense_pro_categories', JSON.stringify(categories));
       localStorage.setItem('expense_pro_settings', JSON.stringify(userSettings));
       localStorage.setItem('expense_pro_sidebar_collapsed', JSON.stringify(isSidebarCollapsed));
       localStorage.setItem('expense_pro_notifications', JSON.stringify(notifications));
     }
-  }, [transactions, budgets, accounts, userSettings, isSidebarCollapsed, notifications, isLoaded]);
+  }, [transactions, budgets, accounts, categories, userSettings, isSidebarCollapsed, notifications, isLoaded]);
 
   const addNotification = (notif: Omit<AppNotification, 'id' | 'date' | 'read'>) => {
     const newNotif: AppNotification = {
@@ -308,6 +337,25 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
     setAccounts(prev => prev.filter(acc => acc.id !== id));
   };
 
+  const addCategory = (cat: Omit<TransactionCategory, 'id'>) => {
+    const newCat = { ...cat, id: Math.random().toString(36).substr(2, 9) };
+    setCategories(prev => [...prev, newCat]);
+  };
+
+  const updateCategory = (id: string, updatedCat: Omit<TransactionCategory, 'id'>) => {
+    const oldCat = categories.find(c => c.id === id);
+    if (oldCat && oldCat.name !== updatedCat.name) {
+      // Update associated transactions and budgets
+      setTransactions(prev => prev.map(t => t.category === oldCat.name ? { ...t, category: updatedCat.name } : t));
+      setBudgets(prev => prev.map(b => b.category === oldCat.name ? { ...b, category: updatedCat.name } : b));
+    }
+    setCategories(prev => prev.map(c => c.id === id ? { ...updatedCat, id } : c));
+  };
+
+  const deleteCategory = (id: string) => {
+    setCategories(prev => prev.filter(c => c.id !== id));
+  };
+
   const updateUserSettings = (settings: Partial<UserSettings>) => {
     setUserSettings(prev => ({ ...prev, ...settings }));
   };
@@ -407,7 +455,11 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
       notifications,
       addNotification,
       markAsRead,
-      clearNotifications
+      clearNotifications,
+      categories,
+      addCategory,
+      updateCategory,
+      deleteCategory
     }}>
       {children}
     </TransactionContext.Provider>

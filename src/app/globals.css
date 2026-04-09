@@ -24,23 +24,28 @@
 }
 
 .light-mode {
-  --background: #fdfdff;
+  --background: #f1f5f9;
   --foreground: #0f172a;
   --primary: #7c3aed;
-  --secondary: #f1f5f9;
-  --card-bg: rgba(255, 255, 255, 0.7);
-  --card-border: rgba(0, 0, 0, 0.08);
-  --glass-bg: rgba(255, 255, 255, 0.5);
-  --glass-border: rgba(0, 0, 0, 0.05);
-  --muted: #64748b;
+  --primary-hover: #6d28d9;
+  --secondary: #e2e8f0;
+  --card-bg: rgba(255, 255, 255, 0.85);
+  --card-border: rgba(0, 0, 0, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --muted: #475569;
+  --error: #dc2626;
+  --success: #059669;
+  --warning: #d97706;
 
   /* Theme Primitives - Light Mode */
   --text-main: #1e293b;
   --text-title: #0f172a;
-  --bg-surface: rgba(0, 0, 0, 0.02);
-  --bg-surface-hover: rgba(0, 0, 0, 0.05);
+  --bg-surface: rgba(255, 255, 255, 0.9);
+  --bg-surface-hover: rgba(255, 255, 255, 1);
 }
 
+/* Light mode overrides for components */
 .light-mode .text-gradient {
   background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
   -webkit-background-clip: text;
@@ -49,18 +54,206 @@
 }
 
 .light-mode ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.light-mode .glass-card {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  color: var(--text-main);
 }
 
 .light-mode .glass-input {
   background: white;
-  border-color: rgba(0, 0, 0, 0.1);
-  color: var(--foreground);
+  border-color: rgba(0, 0, 0, 0.15);
+  color: #0f172a;
+}
+
+.light-mode .glass-input:focus {
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.15);
 }
 
 .light-mode .glass-input option {
   background-color: white;
-  color: var(--foreground);
+  color: #0f172a;
+}
+
+/* Light mode - force all card h3/h4/p text to be dark */
+.light-mode .glass-card h1,
+.light-mode .glass-card h2,
+.light-mode .glass-card h3,
+.light-mode .glass-card h4,
+.light-mode .glass-card h5,
+.light-mode .glass-card p,
+.light-mode .glass-card span:not([class*="badge"]):not([class*="status"]) {
+  color: var(--text-main);
+}
+
+/* Light mode - table text */
+.light-mode table {
+  color: var(--text-main);
+}
+
+/* Light mode - section headings */
+.light-mode h1, .light-mode h2, .light-mode h3, .light-mode h4 {
+  color: var(--text-title);
+}
+/* Light mode sidebar */
+.light-mode aside {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Light mode navbar */
+.light-mode header {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Light mode mobile nav */
+.light-mode nav[class*="mobileNav"] {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Light mode modals */
+.light-mode [class*="overlay"] {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.light-mode [class*="modal"] {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #0f172a;
+}
+
+/* Light mode table rows */
+.light-mode tr:hover {
+  background: rgba(0, 0, 0, 0.03) !important;
+}
+
+.light-mode th {
+  color: #475569 !important;
+}
+
+.light-mode td {
+  color: #0f172a !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Light mode stat cards */
+.light-mode [class*="statCard"],
+.light-mode [class*="card"] {
+  color: #0f172a;
+}
+
+/* Light mode balance / title number text inside cards */
+.light-mode [class*="balance"],
+.light-mode [class*="amount"],
+.light-mode [class*="value"] {
+  color: #0f172a;
+}
+
+/* Light mode muted / subtitle text */
+.light-mode [class*="subtitle"],
+.light-mode [class*="label"],
+.light-mode [class*="muted"] {
+  color: #475569;
+}
+
+/* Light mode buttons */
+.light-mode [class*="iconBtn"] {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #475569;
+}
+
+.light-mode [class*="iconBtn"]:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: #0f172a;
+}
+
+.light-mode [class*="toggleBtn"],
+.light-mode [class*="actionBtn"] {
+  color: #475569;
+  border-color: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light-mode [class*="toggleBtn"]:hover,
+.light-mode [class*="actionBtn"]:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: #0f172a;
+}
+
+/* Light mode search bar */
+.light-mode [class*="searchBar"] {
+  background: white;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light-mode [class*="searchInput"] {
+  color: #0f172a;
+}
+
+/* Light mode notification dropdown */
+.light-mode [class*="notifDropdown"] {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light-mode [class*="notifItem"] {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light-mode [class*="notifItem"].unread {
+  background: rgba(124, 58, 237, 0.05);
+}
+
+.light-mode [class*="notifHeader"] {
+  border-color: rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* Light mode progress bars background */
+.light-mode [class*="progressBar"] {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+/* Light mode filter / select pills */
+.light-mode [class*="filterBtn"],
+.light-mode [class*="filter"] button {
+  color: #475569;
+  border-color: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light-mode [class*="filterBtn"]:hover {
+  background: rgba(0, 0, 0, 0.07);
+  color: #0f172a;
+}
+
+/* Light mode profile section */
+.light-mode [class*="userName"] {
+  color: #0f172a;
+}
+
+.light-mode [class*="userRole"] {
+  color: #475569;
+}
+
+/* Light mode edit/outline buttons */
+.light-mode [class*="editBtn"] {
+  color: #475569;
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+.light-mode [class*="editBtn"]:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #0f172a;
 }
 
 * {

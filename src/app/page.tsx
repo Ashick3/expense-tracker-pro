@@ -49,6 +49,10 @@ export default function Dashboard() {
   const { transactions, getTotals, budgets, userSettings, currencySymbol } = useTransactions();
   const t = useTranslation();
   const { balance, income, expenses } = getTotals();
+  const isLight = userSettings.theme === 'light';
+  const gridStroke = isLight ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.05)';
+  const tooltipStyle = { backgroundColor: isLight ? '#ffffff' : 'var(--secondary)', border: `1px solid ${isLight ? 'rgba(0,0,0,0.1)' : 'var(--card-border)'}`, borderRadius: '8px', color: isLight ? '#0f172a' : 'var(--foreground)' };
+  const itemStyle = { color: isLight ? '#0f172a' : 'var(--foreground)' };
 
   const chartData = useMemo(() => {
     const last7Days = Array.from({ length: 7 }, (_, i) => {
@@ -148,13 +152,10 @@ export default function Dashboard() {
                     <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
                 <XAxis dataKey="name" stroke="var(--muted)" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="var(--muted)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${currencySymbol}${v}`} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'var(--secondary)', border: '1px solid var(--card-border)', borderRadius: '8px' }}
-                  itemStyle={{ color: 'var(--foreground)' }}
-                />
+                <Tooltip contentStyle={tooltipStyle} itemStyle={itemStyle} />
                 <Area type="monotone" dataKey="income" stroke="var(--primary)" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />
                 <Area type="monotone" dataKey="expense" stroke="#ef4444" strokeWidth={2} fill="transparent" />
               </AreaChart>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { CreditCard, Wallet, Landmark, TrendingUp, Trash2 } from 'lucide-react';
+import { CreditCard, Wallet, Landmark, TrendingUp, Trash2, Plus } from 'lucide-react';
 import styles from './Accounts.module.css';
 import { useTransactions, Account } from '@/context/TransactionContext';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -59,8 +59,17 @@ export default function Accounts() {
 
   return (
     <div className={styles.container}>
-      <h1 className="text-gradient">{t.accounts.title}</h1>
-      <p className={styles.subtitle}>{t.accounts.subtitle}</p>
+      <div className={styles.header}>
+        <div>
+          <h1 className="text-gradient">{t.accounts.title}</h1>
+          <p className={styles.subtitle}>{t.accounts.subtitle}</p>
+        </div>
+        <Tooltip text={t.accounts.addAccount}>
+          <button className={styles.addBtn} onClick={handleNewClick}>
+            <Plus size={18} /><span>{t.accounts.addAccount}</span>
+          </button>
+        </Tooltip>
+      </div>
 
       <div className={styles.grid}>
         {accounts.map((acc) => {
@@ -95,12 +104,6 @@ export default function Accounts() {
           );
         })}
 
-        <Tooltip text={t.accounts.linkAccount}>
-          <div className={`${styles.addCard} glass-card`} onClick={handleNewClick}>
-            <div className={styles.addIcon}>+</div>
-            <p>{t.accounts.linkAccount}</p>
-          </div>
-        </Tooltip>
       </div>
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingAccount ? t.accounts.editAccount : t.accounts.linkAccount}>

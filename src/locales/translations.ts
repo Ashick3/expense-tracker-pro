@@ -9,6 +9,7 @@ export const translations = {
       budgets: 'Budgets',
       analytics: 'Analytics',
       accounts: 'Accounts',
+      categories: 'Categories',
       settings: 'Settings',
       logout: 'Logout',
     },
@@ -127,6 +128,19 @@ export const translations = {
       noAccounts: 'No accounts added yet.',
     },
 
+    // --- Categories Page ---
+    categories: {
+      title: 'Categories',
+      subtitle: 'Manage and customize your tracking categories.',
+      addCategory: 'Add Category',
+      categoryName: 'Category Name',
+      editCategory: 'Edit Category',
+      deleteCategory: 'Delete Category',
+      themeColor: 'Theme Color',
+      noCategories: 'No custom categories yet.',
+      save: 'Save Changes'
+    },
+
     // --- Settings Page ---
     settings: {
       title: 'Settings',
@@ -196,6 +210,7 @@ export const translations = {
       budgets: 'பட்ஜெட்',
       analytics: 'பகுப்பாய்வு',
       accounts: 'கணக்குகள்',
+      categories: 'வகைகள்',
       settings: 'அமைப்புகள்',
       logout: 'வெளியேறு',
     },
@@ -312,6 +327,19 @@ export const translations = {
       accountType: 'கணக்கு வகை',
       balance: 'இருப்பு',
       noAccounts: 'இன்னும் கணக்குகள் இல்லை.',
+    },
+
+    // --- Categories Page ---
+    categories: {
+      title: 'வகைகள்',
+      subtitle: 'உங்கள் கண்காணிப்பு வகைகளை நிர்வகிக்கவும் தனிப்பயனாக்கவும்.',
+      addCategory: 'வகை சேர்',
+      categoryName: 'வகை பெயர்',
+      editCategory: 'வகை திருத்து',
+      deleteCategory: 'வகை நீக்கு',
+      themeColor: 'வண்ண தேர்வு',
+      noCategories: 'தனிப்பயன் வகைகள் இன்னும் இல்லை.',
+      save: 'மாற்றங்களை சேமி'
     },
 
     // --- Settings Page ---

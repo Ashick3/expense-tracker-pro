@@ -6,7 +6,10 @@ let db: Database.Database | null = null;
 export function getDb() {
   if (db) return db;
 
-  const dbPath = path.resolve(process.cwd(), 'expense_pro.db');
+  const isVercel = process.env.VERCEL === '1' || process.env.VERCEL === 'true' || process.env.NODE_ENV === 'production';
+  const dbPath = isVercel 
+    ? path.join('/tmp', 'expense_pro.db') 
+    : path.resolve(process.cwd(), 'expense_pro.db');
   db = new Database(dbPath);
 
   // Initialize tables

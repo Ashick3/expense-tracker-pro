@@ -19,20 +19,20 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Missing credentials");
+          return null;
         }
 
         try {
           const user = getDb().prepare('SELECT * FROM users WHERE email = ?').get(credentials.email) as any;
 
           if (!user) {
-            throw new Error("No user found with this email");
+            return null;
           }
 
           const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
 
           if (!isPasswordValid) {
-            throw new Error("Invalid password");
+            return null;
           }
 
           return {

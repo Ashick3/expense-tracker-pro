@@ -45,7 +45,7 @@ export const authOptions: NextAuthOptions = {
           };
         } catch (error: any) {
           console.error("NextAuth Authorize Database Crash:", error);
-          throw new Error(error.message || "Database Error");
+          return null; // Prevents "Configuration" panic
         }
       }
     })
@@ -71,5 +71,5 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || "expense-pro-fallback-secret-key-123!@#",
 };

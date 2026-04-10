@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { TrendingUp, Mail, Lock, ArrowRight, AlertCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
 
-export default function Login() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast } = useToast();
@@ -272,5 +272,17 @@ export default function Login() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function Login() {
+  return (
+    <Suspense fallback={
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <Loader2 className="animate-spin" size={32} color="var(--primary)" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

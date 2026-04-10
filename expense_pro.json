@@ -1,0 +1,101 @@
+{
+  "users": [
+    {
+      "id": "euus5w5vv",
+      "name": "admin",
+      "email": "admin@gmail.com",
+      "password": "$2b$10$6qWeNrlrhzty2E5b2OoMKect4CctulKBTMA2Rxlr1Kcbl.NFm7CWG",
+      "createdAt": "2026-04-10T10:54:24.021Z"
+    }
+  ],
+  "transactions": [
+    {
+      "name": "salary",
+      "amount": 10000,
+      "category": "Food & Drink",
+      "date": "2026-04-10",
+      "type": "expense",
+      "id": "6cdhgmuwv",
+      "user_id": "nar6aru16"
+    },
+    {
+      "name": "salary",
+      "amount": 1000,
+      "category": "Food & Drink",
+      "date": "2026-04-10",
+      "type": "expense",
+      "id": "nfrwus8ss",
+      "user_id": "euus5w5vv"
+    }
+  ],
+  "budgets": [],
+  "accounts": [],
+  "categories": [
+    {
+      "id": "cat_shopping",
+      "name": "Shopping",
+      "color": "#f59e0b",
+      "user_id": "nar6aru16"
+    },
+    {
+      "id": "cat_health",
+      "name": "Healthcare",
+      "color": "#3b82f6",
+      "user_id": "nar6aru16"
+    },
+    {
+      "id": "cat_entertainment",
+      "name": "Entertainment",
+      "color": "#ec4899",
+      "user_id": "nar6aru16"
+    },
+    {
+      "id": "cat_income",
+      "name": "Income",
+      "color": "#10b981",
+      "user_id": "nar6aru16"
+    }
+  ],
+  "settings": [
+    {
+      "user_id": "nar6aru16",
+      "name": "Ashick Y",
+      "email": "alex.j@example.com",
+      "notifyBudget": 1,
+      "notifySummary": 0,
+      "theme": "dark",
+      "language": "en",
+      "currency": "INR"
+    },
+    {
+      "user_id": "euus5w5vv",
+      "name": "admin",
+      "email": "admin@gmail.com",
+      "notifyBudget": 1,
+      "notifySummary": 0,
+      "theme": "dark",
+      "language": "en",
+      "currency": "INR"
+    }
+  ],
+  "notifications": [
+    {
+      "title": "Budget Exceeded",
+      "message": "You have exceeded your Food & Drink budget limit by ₹9500.00.",
+      "type": "alert",
+      "id": "sr5iyeb8w",
+      "date": "2026-04-10T10:53:42.374Z",
+      "read": 0,
+      "user_id": "nar6aru16"
+    },
+    {
+      "title": "Budget Exceeded",
+      "message": "You have exceeded your Food & Drink budget limit by ₹500.00.",
+      "type": "alert",
+      "id": "t5ljmujqj",
+      "date": "2026-04-10T10:54:44.558Z",
+      "read": 0,
+      "user_id": "euus5w5vv"
+    }
+  ]
+}

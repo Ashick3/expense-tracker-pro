@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import getDb from "./db";
+import { readDb, initializeDatabase } from "./db";
 
 // Bypass Vercel missing secret error by enforcing a fallback into process.env directly
 const defaultSecret = "expense-pro-fallback-secret-key-123!@#";
@@ -23,7 +23,10 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          const user = getDb().prepare('SELECT * FROM users WHERE email = ?').get(credentials.email) as any;
+          await initializeDatabase();
+          
+          const db = await readDb();
+          const user = db.users.find((u: any) => u.email === credentials.email);
 
           if (!user) {
             return null;

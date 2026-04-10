@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   turbopack: {},
+  serverExternalPackages: ['better-sqlite3', 'bcryptjs'],
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {

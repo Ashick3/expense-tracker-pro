@@ -371,3 +371,20 @@ select.glass-input {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+
+.auth-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.auth-layout.light-mode {
+  background: #f8fafc;
+}
+
+.auth-layout.dark-mode {
+  background: var(--background);
+}
+

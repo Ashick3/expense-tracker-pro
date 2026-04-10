@@ -16,12 +16,15 @@ import { useTransactions } from '@/context/TransactionContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import Modal from '@/components/ui/Modal';
 
+import SettingsSkeleton from '@/components/skeletons/SettingsSkeleton';
+
 export default function Settings() {
   const { 
     exportData, 
     resetDatabase, 
     userSettings, 
-    updateUserSettings 
+    updateUserSettings,
+    isLoaded
   } = useTransactions();
   const t = useTranslation();
 
@@ -41,6 +44,10 @@ export default function Settings() {
     setNotifyBudget(userSettings.notifyBudget);
     setNotifySummary(userSettings.notifySummary);
   }, [userSettings]);
+
+  if (!isLoaded) {
+    return <SettingsSkeleton />;
+  }
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();

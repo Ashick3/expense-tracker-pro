@@ -1,0 +1,119 @@
+.toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  min-width: 320px;
+  max-width: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  z-index: 9999;
+  animation: slideIn 0.3s ease-out;
+  overflow: hidden;
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+.message {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin-left: 12px;
+}
+
+.closeBtn:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+/* Types */
+.success {
+  border-left: 4px solid #10b981;
+}
+.success .icon {
+  color: #10b981;
+}
+
+.error {
+  border-left: 4px solid #ef4444;
+}
+.error .icon {
+  color: #ef4444;
+}
+
+.warning {
+  border-left: 4px solid #f59e0b;
+}
+.warning .icon {
+  color: #f59e0b;
+}
+
+.info {
+  border-left: 4px solid #3b82f6;
+}
+.info .icon {
+  color: #3b82f6;
+}
+
+/* Progress Bar */
+.progressBar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  width: 100%;
+  animation: progress 4s linear forwards;
+}
+
+.success .progressBar { background: #10b981; }
+.error .progressBar { background: #ef4444; }
+.warning .progressBar { background: #f59e0b; }
+.info .progressBar { background: #3b82f6; }
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes progress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+@media (max-width: 640px) {
+  .toast {
+    left: 16px;
+    right: 16px;
+    min-width: 0;
+    top: 16px;
+  }
+}

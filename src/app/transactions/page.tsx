@@ -8,14 +8,20 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { exportToCsv } from '@/utils/exportCsv';
 import Tooltip from '@/components/ui/Tooltip';
 
+import TransactionsSkeleton from '@/components/skeletons/TransactionsSkeleton';
+
 export default function Transactions() {
-  const { transactions, deleteTransaction, openAddModal, currencySymbol } = useTransactions();
+  const { transactions, deleteTransaction, openAddModal, currencySymbol, isLoaded } = useTransactions();
   const t = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFilter, setDateFilter] = useState<'all' | 'week' | 'month' | 'year'>('all');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState<'all' | 'income' | 'expense'>('all');
 
+  if (!isLoaded) {
+    return <TransactionsSkeleton />;
+  }
+  
   const categories = ['All', ...Array.from(new Set(transactions.map(tx => tx.category)))];
 
   const filteredTransactions = transactions.filter(tx => {

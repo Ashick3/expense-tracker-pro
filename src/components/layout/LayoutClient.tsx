@@ -7,8 +7,22 @@ import GlobalTransactionModal from "@/components/modals/GlobalTransactionModal";
 import MobileNav from "@/components/layout/MobileNav";
 import styles from "./LayoutClient.module.css";
 
+import { usePathname } from 'next/navigation';
+
 export default function LayoutClient({ children }: { children: React.ReactNode }) {
   const { isSidebarCollapsed, userSettings } = useTransactions();
+  const pathname = usePathname();
+
+  const authRoutes = ['/login', '/register', '/forgot-password'];
+  const isAuthRoute = authRoutes.includes(pathname);
+
+  if (isAuthRoute) {
+    return (
+      <div className={`auth-layout ${userSettings.theme === 'light' ? 'light-mode' : 'dark-mode'}`}>
+        {children}
+      </div>
+    );
+  }
 
   return (
     <div

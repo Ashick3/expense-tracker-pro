@@ -17,10 +17,12 @@ import styles from './Sidebar.module.css';
 import Tooltip from '@/components/ui/Tooltip';
 import { useTransactions } from '@/context/TransactionContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useSession, signOut } from 'next-auth/react';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { isSidebarCollapsed } = useTransactions();
+  const { data: session } = useSession();
   const t = useTranslation();
 
   const menuItems = [
@@ -32,6 +34,10 @@ export default function Sidebar() {
     { icon: Tags, label: t.nav.categories, href: '/categories' },
     { icon: Settings, label: t.nav.settings, href: '/settings' },
   ];
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: '/login' });
+  };
 
   return (
     <aside className={`${styles.sidebar} ${isSidebarCollapsed ? styles.collapsed : ''}`}>
@@ -65,8 +71,20 @@ export default function Sidebar() {
       </nav>
 
       <div className={styles.footer}>
+        <div className={styles.userProfile}>
+          <div className={styles.avatar}>
+            {(session?.user?.name || 'U').charAt(0)}
+          </div>
+          {!isSidebarCollapsed && (
+            <div className={styles.userInfo}>
+              <p className={styles.userName}>{session?.user?.name}</p>
+              <p className={styles.userEmail}>{session?.user?.email}</p>
+            </div>
+          )}
+        </div>
+        
         <Tooltip text={isSidebarCollapsed ? t.nav.logout : ''} position="right">
-          <button className={styles.logoutBtn}>
+          <button className={styles.logoutBtn} onClick={handleLogout}>
             <LogOut size={20} />
             {!isSidebarCollapsed && <span>{t.nav.logout}</span>}
           </button>

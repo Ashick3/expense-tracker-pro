@@ -15,9 +15,12 @@ const ICON_MAP: Record<string, any> = {
   'Investment': TrendingUp,
 };
 
+import AccountsSkeleton from '@/components/skeletons/AccountsSkeleton';
+
 export default function Accounts() {
-  const { accounts, addAccount, updateAccount, deleteAccount, currencySymbol } = useTransactions();
+  const { accounts, addAccount, updateAccount, deleteAccount, currencySymbol, isLoaded } = useTransactions();
   const t = useTranslation();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
 
@@ -27,6 +30,10 @@ export default function Accounts() {
     balance: '',
     color: '#7c3aed'
   });
+
+  if (!isLoaded) {
+    return <AccountsSkeleton />;
+  }
 
   const handleEditClick = (acc: Account) => {
     setEditingAccount(acc);

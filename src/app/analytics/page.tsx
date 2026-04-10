@@ -11,16 +11,14 @@ import { useTranslation } from '@/hooks/useTranslation';
 import styles from './Analytics.module.css';
 import StatCard from '@/components/ui/StatCard';
 
+import AnalyticsSkeleton from '@/components/skeletons/AnalyticsSkeleton';
+
 export default function Analytics() {
-  const { transactions, budgets, getTotals, currencySymbol, userSettings } = useTransactions();
+  const { transactions, budgets, getTotals, currencySymbol, userSettings, isLoaded } = useTransactions();
   const t = useTranslation();
+
   const { income, expenses } = getTotals();
   const isLight = userSettings.theme === 'light';
-  const gridStroke = isLight ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.05)';
-  const tooltipBg = isLight ? '#ffffff' : 'var(--secondary)';
-  const tooltipBorder = isLight ? 'rgba(0,0,0,0.1)' : 'var(--card-border)';
-  const tooltipColor = isLight ? '#0f172a' : 'var(--foreground)';
-  const cursorFill = isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.02)';
 
   const monthlyInsights = useMemo(() => {
     const now = new Date();
@@ -63,6 +61,16 @@ export default function Analytics() {
     });
   }, [transactions]);
 
+  if (!isLoaded) {
+    return <AnalyticsSkeleton />;
+  }
+
+  const gridStroke = isLight ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.05)';
+  const tooltipBg = isLight ? '#ffffff' : 'var(--secondary)';
+  const tooltipBorder = isLight ? 'rgba(0,0,0,0.1)' : 'var(--card-border)';
+  const tooltipColor = isLight ? '#0f172a' : 'var(--foreground)';
+  const cursorFill = isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.02)';
+  
   const tooltipStyle = { backgroundColor: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: '8px', color: tooltipColor };
   const itemStyle = { color: tooltipColor };
 

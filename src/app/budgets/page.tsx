@@ -14,9 +14,12 @@ const ICON_MAP: Record<string, any> = {
   'Entertainment': ({ size }: { size: number }) => <Briefcase size={size} />,
 };
 
+import BudgetsSkeleton from '@/components/skeletons/BudgetsSkeleton';
+
 export default function Budgets() {
-  const { budgets, getCategorySpending, transactions, updateBudget, addBudget, currencySymbol } = useTransactions();
+  const { budgets, getCategorySpending, transactions, updateBudget, addBudget, currencySymbol, isLoaded } = useTransactions();
   const t = useTranslation();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
   const [formData, setFormData] = useState({ category: '', limit: '', color: '#7c3aed' });
@@ -34,13 +37,18 @@ export default function Budgets() {
   }, [transactions]);
 
   const totalLimit = useMemo(() => budgets.reduce((acc, curr) => acc + curr.limit, 0), [budgets]);
-  const overallProgress = totalLimit > 0 ? (totalSpent / totalLimit) * 100 : 0;
-
+  
   const budgetStats = useMemo(() => {
     let onTrack = 0, overLimit = 0;
     budgets.forEach(b => { const spent = getCategorySpending(b.category); if (spent > b.limit) overLimit++; else onTrack++; });
     return { onTrack, overLimit };
   }, [budgets, getCategorySpending]);
+
+  if (!isLoaded) {
+    return <BudgetsSkeleton />;
+  }
+
+  const overallProgress = totalLimit > 0 ? (totalSpent / totalLimit) * 100 : 0;
 
   const handleEditClick = (budget: Budget) => {
     setEditingBudget(budget);

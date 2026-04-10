@@ -45,14 +45,11 @@ const ICON_MAP: Record<string, any> = {
   'Other': LucidePieChart
 };
 
+import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton';
+
 export default function Dashboard() {
-  const { transactions, getTotals, budgets, userSettings, currencySymbol } = useTransactions();
+  const { transactions, getTotals, budgets, userSettings, currencySymbol, isLoaded } = useTransactions();
   const t = useTranslation();
-  const { balance, income, expenses } = getTotals();
-  const isLight = userSettings.theme === 'light';
-  const gridStroke = isLight ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.05)';
-  const tooltipStyle = { backgroundColor: isLight ? '#ffffff' : 'var(--secondary)', border: `1px solid ${isLight ? 'rgba(0,0,0,0.1)' : 'var(--card-border)'}`, borderRadius: '8px', color: isLight ? '#0f172a' : 'var(--foreground)' };
-  const itemStyle = { color: isLight ? '#0f172a' : 'var(--foreground)' };
 
   const chartData = useMemo(() => {
     const last7Days = Array.from({ length: 7 }, (_, i) => {
@@ -89,6 +86,16 @@ export default function Dashboard() {
       color: b.color
     })).filter(d => d.value > 0);
   }, [transactions, budgets]);
+
+  if (!isLoaded) {
+    return <DashboardSkeleton />;
+  }
+
+  const { balance, income, expenses } = getTotals();
+  const isLight = userSettings.theme === 'light';
+  const gridStroke = isLight ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.05)';
+  const tooltipStyle = { backgroundColor: isLight ? '#ffffff' : 'var(--secondary)', border: `1px solid ${isLight ? 'rgba(0,0,0,0.1)' : 'var(--card-border)'}`, borderRadius: '8px', color: isLight ? '#0f172a' : 'var(--foreground)' };
+  const itemStyle = { color: isLight ? '#0f172a' : 'var(--foreground)' };
 
   const recentTransactions = [...transactions]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())

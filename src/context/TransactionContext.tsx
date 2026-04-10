@@ -1,6 +1,20 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { 
+  getInitialData, 
+  saveTransaction, 
+  deleteTransaction, 
+  saveBudget, 
+  saveAccount, 
+  deleteAccount, 
+  saveCategory, 
+  deleteCategory, 
+  saveSettings, 
+  saveNotification, 
+  deleteNotifications 
+} from '@/lib/actions';
 
 export type TransactionType = 'income' | 'expense';
 
@@ -88,6 +102,7 @@ interface TransactionContextType {
   addCategory: (cat: Omit<TransactionCategory, 'id'>) => void;
   updateCategory: (id: string, cat: Omit<TransactionCategory, 'id'>) => void;
   deleteCategory: (id: string) => void;
+  isLoaded: boolean;
 }
 
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
@@ -132,6 +147,7 @@ const INITIAL_CATEGORIES: TransactionCategory[] = [
 const INITIAL_SIDEBAR_STATE = false;
 
 export function TransactionProvider({ children }: { children: React.ReactNode }) {
+  const { status } = useSession();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>(INITIAL_BUDGETS);
   const [accounts, setAccounts] = useState<Account[]>(INITIAL_ACCOUNTS);
@@ -143,65 +159,104 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
-  // Load data from localStorage
+  // Load data from SQLite (with fallback to localStorage migration)
   useEffect(() => {
-    const savedTransactions = localStorage.getItem('expense_pro_transactions');
-    const savedBudgets = localStorage.getItem('expense_pro_budgets');
-    const savedAccounts = localStorage.getItem('expense_pro_accounts');
-    const savedCategories = localStorage.getItem('expense_pro_categories');
-    const savedSettings = localStorage.getItem('expense_pro_settings');
-    const savedSidebar = localStorage.getItem('expense_pro_sidebar_collapsed');
-    const savedNotifications = localStorage.getItem('expense_pro_notifications');
+    async function loadData() {
+      if (status !== 'authenticated') return;
+      
+      try {
+        const dbData = await getInitialData();
+        
+        // If SQLite settings are missing, consider it a fresh DB and check for migration
+        if (!dbData.settings) {
+          console.log('No SQLite data found, checking localStorage for migration...');
+          
+          const savedTransactions = localStorage.getItem('expense_pro_transactions');
+          const savedBudgets = localStorage.getItem('expense_pro_budgets');
+          const savedAccounts = localStorage.getItem('expense_pro_accounts');
+          const savedCategories = localStorage.getItem('expense_pro_categories');
+          const savedSettings = localStorage.getItem('expense_pro_settings');
+          const savedNotifications = localStorage.getItem('expense_pro_notifications');
 
-    if (savedTransactions) {
-      setTransactions(JSON.parse(savedTransactions));
-    } else {
-      setTransactions(INITIAL_TRANSACTIONS);
+          // Migration Logic
+          if (savedTransactions || savedBudgets || savedAccounts || savedCategories || savedSettings || savedNotifications) {
+            console.log('Migrating data to SQLite...');
+            const txs = savedTransactions ? JSON.parse(savedTransactions) : INITIAL_TRANSACTIONS;
+            const bdgts = savedBudgets ? JSON.parse(savedBudgets) : INITIAL_BUDGETS;
+            const accs = savedAccounts ? JSON.parse(savedAccounts) : INITIAL_ACCOUNTS;
+            const cats = savedCategories ? JSON.parse(savedCategories) : INITIAL_CATEGORIES;
+            const stngs = savedSettings ? { ...INITIAL_SETTINGS, ...JSON.parse(savedSettings) } : INITIAL_SETTINGS;
+            const ntfs = savedNotifications ? JSON.parse(savedNotifications) : [];
+
+            setTransactions(txs);
+            setBudgets(bdgts);
+            setAccounts(accs);
+            setCategories(cats);
+            setUserSettings(stngs);
+            setNotifications(ntfs);
+
+            // Persist to SQLite
+            for (const tx of txs) await saveTransaction(tx);
+            for (const b of bdgts) await saveBudget(b);
+            for (const a of accs) await saveAccount(a);
+            for (const c of cats) await saveCategory(c);
+            await saveSettings(stngs);
+            for (const n of ntfs) await saveNotification(n);
+            
+            console.log('Migration complete.');
+          } else {
+            console.log('No migration data found, using initials.');
+            setTransactions(INITIAL_TRANSACTIONS);
+            setBudgets(INITIAL_BUDGETS);
+            setAccounts(INITIAL_ACCOUNTS);
+            setCategories(INITIAL_CATEGORIES);
+            setUserSettings(INITIAL_SETTINGS);
+            
+            // Initial seed to DB
+            await saveSettings(INITIAL_SETTINGS);
+            for (const b of INITIAL_BUDGETS) await saveBudget(b);
+            for (const a of INITIAL_ACCOUNTS) await saveAccount(a);
+            for (const c of INITIAL_CATEGORIES) await saveCategory(c);
+          }
+        } else {
+          console.log('Loading data from SQLite...');
+          setTransactions(dbData.transactions);
+          setBudgets(dbData.budgets.length > 0 ? dbData.budgets : INITIAL_BUDGETS);
+          setAccounts(dbData.accounts.length > 0 ? dbData.accounts : INITIAL_ACCOUNTS);
+          setCategories(dbData.categories.length > 0 ? dbData.categories : INITIAL_CATEGORIES);
+          setUserSettings(dbData.settings);
+          setNotifications(dbData.notifications);
+        }
+
+        setIsLoaded(true);
+      } catch (error) {
+        console.error('Failed to load data from SQLite:', error);
+        setIsLoaded(true);
+      }
     }
+    loadData();
+  }, [status]);
 
-    if (savedBudgets) {
-      setBudgets(JSON.parse(savedBudgets));
+  // Sync session name/email into settings
+  const { data: session } = useSession();
+  useEffect(() => {
+    if (session?.user && isLoaded) {
+      setUserSettings(prev => ({
+        ...prev,
+        name: session.user?.name || prev.name,
+        email: session.user?.email || prev.email,
+      }));
     }
+  }, [session, isLoaded]);
 
-    if (savedAccounts) {
-      setAccounts(JSON.parse(savedAccounts));
-    }
-
-    if (savedCategories) {
-      setCategories(JSON.parse(savedCategories));
-    } else {
-      setCategories(INITIAL_CATEGORIES);
-    }
-
-    if (savedSettings) {
-      setUserSettings(JSON.parse(savedSettings));
-    }
-
-    if (savedSidebar) {
-      setIsSidebarCollapsed(JSON.parse(savedSidebar));
-    }
-
-    if (savedNotifications) {
-      setNotifications(JSON.parse(savedNotifications));
-    }
-
-    setIsLoaded(true);
-  }, []);
-
-  // Save data to localStorage
+  // Save sidebar state to localStorage (UI only)
   useEffect(() => {
     if (isLoaded) {
-      localStorage.setItem('expense_pro_transactions', JSON.stringify(transactions));
-      localStorage.setItem('expense_pro_budgets', JSON.stringify(budgets));
-      localStorage.setItem('expense_pro_accounts', JSON.stringify(accounts));
-      localStorage.setItem('expense_pro_categories', JSON.stringify(categories));
-      localStorage.setItem('expense_pro_settings', JSON.stringify(userSettings));
       localStorage.setItem('expense_pro_sidebar_collapsed', JSON.stringify(isSidebarCollapsed));
-      localStorage.setItem('expense_pro_notifications', JSON.stringify(notifications));
     }
-  }, [transactions, budgets, accounts, categories, userSettings, isSidebarCollapsed, notifications, isLoaded]);
+  }, [isSidebarCollapsed, isLoaded]);
 
-  const addNotification = (notif: Omit<AppNotification, 'id' | 'date' | 'read'>) => {
+  const addNotification = async (notif: Omit<AppNotification, 'id' | 'date' | 'read'>) => {
     const newNotif: AppNotification = {
       ...notif,
       id: Math.random().toString(36).substr(2, 9),
@@ -209,14 +264,21 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
       read: false
     };
     setNotifications(prev => [newNotif, ...prev]);
+    await saveNotification(newNotif);
   };
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  const markAsRead = async (id: string) => {
+    const notif = notifications.find(n => n.id === id);
+    if (notif) {
+      const updated = { ...notif, read: true };
+      setNotifications(prev => prev.map(n => n.id === id ? updated : n));
+      await saveNotification(updated);
+    }
   };
 
-  const clearNotifications = () => {
+  const clearNotifications = async () => {
     setNotifications([]);
+    await deleteNotifications();
   };
 
   const checkBudgetExceedance = (tx: Omit<Transaction, 'id'>, currentTransactions: Transaction[]) => {
@@ -257,40 +319,43 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
     }
   };
 
-  const addTransaction = (tx: Omit<Transaction, 'id'>) => {
+  const addTransaction = async (tx: Omit<Transaction, 'id'>) => {
     const newTx = { ...tx, id: Math.random().toString(36).substr(2, 9) };
     checkBudgetExceedance(tx, transactions);
     setTransactions(prev => [newTx, ...prev]);
+    await saveTransaction(newTx);
   };
 
-  const deleteTransaction = (id: string) => {
+  const deleteTransaction = async (id: string) => {
     setTransactions(prev => prev.filter(tx => tx.id !== id));
+    await deleteTransaction(id);
   };
 
-  const updateTransaction = (id: string, updatedTx: Omit<Transaction, 'id'>) => {
+  const updateTransaction = async (id: string, updatedTx: Omit<Transaction, 'id'>) => {
     // Check budget without the old transaction amount
     const otherTransactions = transactions.filter(t => t.id !== id);
     checkBudgetExceedance(updatedTx, otherTransactions);
-    setTransactions(prev => prev.map(tx => tx.id === id ? { ...updatedTx, id } : tx));
+    const updated = { ...updatedTx, id };
+    setTransactions(prev => prev.map(tx => tx.id === id ? updated : tx));
+    await saveTransaction(updated);
   };
 
-  const updateBudget = (updatedBudget: Budget) => {
+  const updateBudget = async (updatedBudget: Budget) => {
     setBudgets(prev => prev.map(b => b.category === updatedBudget.category ? updatedBudget : b));
+    await saveBudget(updatedBudget);
   };
 
-  const addBudget = (newBudget: Budget) => {
+  const addBudget = async (newBudget: Budget) => {
     setBudgets(prev => [...prev, newBudget]);
+    await saveBudget(newBudget);
   };
 
   const clearData = () => {
     if (window.confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
       setTransactions([]);
       setBudgets(INITIAL_BUDGETS);
-      localStorage.removeItem('expense_pro_transactions');
-      localStorage.removeItem('expense_pro_budgets');
-      // Notify the user
+      // SQLite clear logic would go here
       alert('Application data has been successfully cleared.');
-      // Force a reload to ensure clean state across all components
       window.location.reload();
     }
   };
@@ -306,7 +371,7 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `expense_pro_backup_${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `expense_pro_user_backup_${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -318,46 +383,62 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
     setBudgets(INITIAL_BUDGETS);
     setAccounts(INITIAL_ACCOUNTS);
     setUserSettings(INITIAL_SETTINGS);
-    localStorage.removeItem('expense_pro_transactions');
-    localStorage.removeItem('expense_pro_budgets');
-    localStorage.removeItem('expense_pro_accounts');
-    localStorage.removeItem('expense_pro_settings');
   };
 
-  const addAccount = (acc: Omit<Account, 'id'>) => {
+  const addAccount = async (acc: Omit<Account, 'id'>) => {
     const newAcc = { ...acc, id: Math.random().toString(36).substr(2, 9) };
     setAccounts(prev => [...prev, newAcc]);
+    await saveAccount(newAcc);
   };
 
-  const updateAccount = (id: string, updatedAcc: Omit<Account, 'id'>) => {
-    setAccounts(prev => prev.map(acc => acc.id === id ? { ...updatedAcc, id } : acc));
+  const updateAccount = async (id: string, updatedAcc: Omit<Account, 'id'>) => {
+    const updated = { ...updatedAcc, id };
+    setAccounts(prev => prev.map(acc => acc.id === id ? updated : acc));
+    await saveAccount(updated);
   };
 
-  const deleteAccount = (id: string) => {
+  const deleteAccount = async (id: string) => {
     setAccounts(prev => prev.filter(acc => acc.id !== id));
+    await deleteAccount(id);
   };
 
-  const addCategory = (cat: Omit<TransactionCategory, 'id'>) => {
+  const addCategory = async (cat: Omit<TransactionCategory, 'id'>) => {
     const newCat = { ...cat, id: Math.random().toString(36).substr(2, 9) };
     setCategories(prev => [...prev, newCat]);
+    await saveCategory(newCat);
   };
 
-  const updateCategory = (id: string, updatedCat: Omit<TransactionCategory, 'id'>) => {
+  const updateCategory = async (id: string, updatedCat: Omit<TransactionCategory, 'id'>) => {
     const oldCat = categories.find(c => c.id === id);
     if (oldCat && oldCat.name !== updatedCat.name) {
       // Update associated transactions and budgets
-      setTransactions(prev => prev.map(t => t.category === oldCat.name ? { ...t, category: updatedCat.name } : t));
-      setBudgets(prev => prev.map(b => b.category === oldCat.name ? { ...b, category: updatedCat.name } : b));
+      const newTransactions = transactions.map(t => t.category === oldCat.name ? { ...t, category: updatedCat.name } : t);
+      const newBudgets = budgets.map(b => b.category === oldCat.name ? { ...b, category: updatedCat.name } : b);
+      
+      setTransactions(newTransactions);
+      setBudgets(newBudgets);
+
+      for (const t of newTransactions) {
+        if (t.category === updatedCat.name) await saveTransaction(t);
+      }
+      for (const b of newBudgets) {
+        if (b.category === updatedCat.name) await saveBudget(b);
+      }
     }
-    setCategories(prev => prev.map(c => c.id === id ? { ...updatedCat, id } : c));
+    const updated = { ...updatedCat, id };
+    setCategories(prev => prev.map(c => c.id === id ? updated : c));
+    await saveCategory(updated);
   };
 
-  const deleteCategory = (id: string) => {
+  const deleteCategory = async (id: string) => {
     setCategories(prev => prev.filter(c => c.id !== id));
+    await deleteCategory(id);
   };
 
-  const updateUserSettings = (settings: Partial<UserSettings>) => {
-    setUserSettings(prev => ({ ...prev, ...settings }));
+  const updateUserSettings = async (settings: Partial<UserSettings>) => {
+    const updated = { ...userSettings, ...settings };
+    setUserSettings(updated);
+    await saveSettings(updated);
   };
 
   const toggleSidebar = () => {
@@ -379,7 +460,6 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
 
-    // Monthly Totals
     const monthlyTransactions = transactions.filter(tx => {
       const d = new Date(tx.date);
       return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
@@ -392,7 +472,6 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
       .filter(tx => tx.type === 'expense')
       .reduce((sum, tx) => sum + tx.amount, 0);
 
-    // All-Time Totals
     const totalIncome = transactions
       .filter(tx => tx.type === 'income')
       .reduce((sum, tx) => sum + tx.amount, 0);
@@ -459,7 +538,8 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
       categories,
       addCategory,
       updateCategory,
-      deleteCategory
+      deleteCategory,
+      isLoaded
     }}>
       {children}
     </TransactionContext.Provider>

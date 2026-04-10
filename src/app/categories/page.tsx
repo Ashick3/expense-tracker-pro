@@ -8,9 +8,12 @@ import { useTranslation } from '@/hooks/useTranslation';
 import Tooltip from '@/components/ui/Tooltip';
 import Modal from '@/components/ui/Modal';
 
+import CategoriesSkeleton from '@/components/skeletons/CategoriesSkeleton';
+
 export default function Categories() {
-  const { categories, addCategory, updateCategory, deleteCategory } = useTransactions();
+  const { categories, addCategory, updateCategory, deleteCategory, isLoaded } = useTransactions();
   const t = useTranslation();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<TransactionCategory | null>(null);
 
@@ -18,6 +21,10 @@ export default function Categories() {
     name: '',
     color: '#7c3aed'
   });
+
+  if (!isLoaded) {
+    return <CategoriesSkeleton />;
+  }
 
   const handleEditClick = (cat: TransactionCategory) => {
     setEditingCategory(cat);

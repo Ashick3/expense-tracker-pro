@@ -8,17 +8,20 @@ interface SkeletonProps {
   height?: string | number;
   variant?: 'text' | 'rect' | 'circle';
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export default function Skeleton({ 
   width, 
   height, 
   variant = 'rect', 
-  className = '' 
+  className = '',
+  style: customStyle
 }: SkeletonProps) {
   const style = {
     width: typeof width === 'number' ? `${width}px` : width,
     height: typeof height === 'number' ? `${height}px` : height,
+    ...customStyle
   };
 
   return (

@@ -64,7 +64,17 @@ export default function Navbar() {
     <>
     <header className={styles.navbar}>
       <div className={styles.leftSection}>
-        <button className={styles.toggleBtn} onClick={() => { toggleSidebar(); setIsMobileDrawerOpen(o => !o); }} aria-label="Toggle sidebar">
+        <button 
+          className={styles.toggleBtn} 
+          onClick={() => { 
+            if (window.innerWidth <= 768) {
+              setIsMobileDrawerOpen(o => !o);
+            } else {
+              toggleSidebar(); 
+            }
+          }} 
+          aria-label="Toggle sidebar"
+        >
           <Menu size={20} />
         </button>
         

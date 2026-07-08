@@ -1,244 +1,200 @@
-'use server';
+// Client-side localStorage persistence — no server required.
 
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "./auth";
-import bcrypt from "bcryptjs";
-import { readDb, writeDb, initializeDatabase } from './db';
-import { 
-  Transaction, 
-  Budget, 
-  Account, 
-  TransactionCategory, 
-  UserSettings, 
-  AppNotification 
-} from '@/context/TransactionContext';
+import type {
+  Transaction,
+  Budget,
+  Account,
+  TransactionCategory,
+  UserSettings,
+  AppNotification
+} from '@/types/finance';
 
-async function getUserId() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return null;
-  return (session.user as any).id;
+// ---------------------------------------------------------------------------
+// Storage keys
+// ---------------------------------------------------------------------------
+const KEYS = {
+  transactions: 'expense_pro_transactions',
+  budgets: 'expense_pro_budgets',
+  accounts: 'expense_pro_accounts',
+  categories: 'expense_pro_categories',
+  settings: 'expense_pro_settings',
+  notifications: 'expense_pro_notifications',
+} as const;
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+function read<T>(key: string): T | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
 }
 
-// Auth Actions
-export async function registerUser(formData: any) {
-  const { name, email, password } = formData;
-  
-  await initializeDatabase();
-  const dbConfig = await readDb();
-  
-  if (dbConfig.users.find((u: any) => u.email === email)) {
-    throw new Error("User with this email already exists");
+function write<T>(key: string, value: T): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function readList<T>(key: string): T[] {
+  return read<T[]>(key) ?? [];
+}
+
+// ---------------------------------------------------------------------------
+// Initial data (mirrored from TransactionContext so seeds are consistent)
+// ---------------------------------------------------------------------------
+const INITIAL_BUDGETS: Budget[] = [
+  { category: 'Housing', limit: 1500, color: '#7c3aed' },
+  { category: 'Food & Drink', limit: 500, color: '#ef4444' },
+  { category: 'Transport', limit: 300, color: '#10b981' },
+  { category: 'Shopping', limit: 800, color: '#f59e0b' },
+  { category: 'Healthcare', limit: 400, color: '#3b82f6' },
+  { category: 'Entertainment', limit: 200, color: '#ec4899' },
+];
+
+const INITIAL_ACCOUNTS: Account[] = [
+  { id: 'acc1', name: 'Main Savings', type: 'Bank', balance: 12500, color: '#7c3aed' },
+  { id: 'acc2', name: 'Checking Account', type: 'Bank', balance: 3400, color: '#10b981' },
+  { id: 'acc3', name: 'Cash Wallet', type: 'Cash', balance: 850, color: '#f59e0b' },
+];
+
+const INITIAL_CATEGORIES: TransactionCategory[] = [
+  { id: 'cat_housing', name: 'Housing', color: '#7c3aed' },
+  { id: 'cat_food', name: 'Food & Drink', color: '#ef4444' },
+  { id: 'cat_transport', name: 'Transport', color: '#10b981' },
+  { id: 'cat_shopping', name: 'Shopping', color: '#f59e0b' },
+  { id: 'cat_health', name: 'Healthcare', color: '#3b82f6' },
+  { id: 'cat_entertainment', name: 'Entertainment', color: '#ec4899' },
+  { id: 'cat_income', name: 'Income', color: '#10b981' },
+];
+
+const INITIAL_SETTINGS: UserSettings = {
+  name: 'Alex Johnson',
+  email: 'alex.j@example.com',
+  notifyBudget: true,
+  notifySummary: false,
+  theme: 'dark',
+  language: 'en',
+  currency: 'INR',
+};
+
+// ---------------------------------------------------------------------------
+// Public API — same signatures as the old server actions
+// ---------------------------------------------------------------------------
+
+export async function initializeDatabase(): Promise<boolean> {
+  // Seed defaults only on first run (when nothing is stored yet).
+  if (read(KEYS.settings) === null) {
+    write(KEYS.budgets, INITIAL_BUDGETS);
+    write(KEYS.accounts, INITIAL_ACCOUNTS);
+    write(KEYS.categories, INITIAL_CATEGORIES);
+    write(KEYS.settings, INITIAL_SETTINGS);
+    write(KEYS.transactions, []);
+    write(KEYS.notifications, []);
   }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const userId = Math.random().toString(36).substr(2, 9);
-  
-  dbConfig.users.push({
-    id: userId,
-    name,
-    email,
-    password: hashedPassword,
-    createdAt: new Date().toISOString()
-  });
-
-  dbConfig.settings.push({
-    user_id: userId,
-    name,
-    email,
-    notifyBudget: 1,
-    notifySummary: 0,
-    theme: 'dark',
-    language: 'en',
-    currency: 'INR'
-  });
-
-  await writeDb(dbConfig);
-  return { success: true };
+  return true;
 }
 
 export async function getInitialData() {
-  const userId = await getUserId();
-  if (!userId) return { transactions: [], budgets: [], accounts: [], categories: [], settings: null, notifications: [] };
-
   await initializeDatabase();
-  const dbConfig = await readDb();
 
-  const transactions = dbConfig.transactions
-    .filter((t: any) => t.user_id === userId)
-    .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  
-  const budgets: Budget[] = dbConfig.budgets
-    .filter((b: any) => b.user_id === userId)
-    .map((row: any) => ({
-      category: row.category,
-      limit: row.limit_amount,
-      color: row.color,
-      icon: row.icon
-    }));
+  const transactions = (readList<Transaction>(KEYS.transactions))
+    .slice()
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  const accounts = dbConfig.accounts.filter((a: any) => a.user_id === userId);
-  const categories = dbConfig.categories.filter((c: any) => c.user_id === userId);
-  
-  const settingsRow = dbConfig.settings.find((s: any) => s.user_id === userId);
-  const settings: UserSettings | null = settingsRow ? {
-    name: settingsRow.name,
-    email: settingsRow.email,
-    notifyBudget: Boolean(settingsRow.notifyBudget),
-    notifySummary: Boolean(settingsRow.notifySummary),
-    theme: settingsRow.theme,
-    language: settingsRow.language,
-    currency: settingsRow.currency
-  } : null;
-
-  const notifications = dbConfig.notifications
-    .filter((n: any) => n.user_id === userId)
-    .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .map((row: any) => ({
-      id: row.id,
-      title: row.title,
-      message: row.message,
-      date: row.date,
-      read: Boolean(row.read),
-      type: row.type
-    }));
+  const budgets = readList<Budget>(KEYS.budgets);
+  const accounts = readList<Account>(KEYS.accounts);
+  const categories = readList<TransactionCategory>(KEYS.categories);
+  const settings = read<UserSettings>(KEYS.settings);
+  const notifications = (readList<AppNotification>(KEYS.notifications))
+    .slice()
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return { transactions, budgets, accounts, categories, settings, notifications };
 }
 
-// Transaction Actions
-export async function saveTransaction(tx: Transaction) {
-  const userId = await getUserId();
-  if (!userId) throw new Error("Unauthorized");
-  
-  const dbConfig = await readDb();
-  const index = dbConfig.transactions.findIndex((t: any) => t.id === tx.id && t.user_id === userId);
-  const newTx = { ...tx, user_id: userId };
-  
-  if (index >= 0) dbConfig.transactions[index] = newTx;
-  else dbConfig.transactions.push(newTx);
-  
-  await writeDb(dbConfig);
+// ---- Transactions ----
+
+export async function saveTransaction(tx: Transaction): Promise<void> {
+  const list = readList<Transaction>(KEYS.transactions);
+  const idx = list.findIndex(t => t.id === tx.id);
+  if (idx >= 0) list[idx] = tx;
+  else list.push(tx);
+  write(KEYS.transactions, list);
 }
 
-export async function deleteTransaction(id: string) {
-  const userId = await getUserId();
-  if (!userId) throw new Error("Unauthorized");
-  
-  const dbConfig = await readDb();
-  dbConfig.transactions = dbConfig.transactions.filter((t: any) => !(t.id === id && t.user_id === userId));
-  await writeDb(dbConfig);
+export async function deleteTransactionRecord(id: string): Promise<void> {
+  write(KEYS.transactions, readList<Transaction>(KEYS.transactions).filter(t => t.id !== id));
 }
 
-// Budget Actions
-export async function saveBudget(budget: Budget) {
-  const userId = await getUserId();
-  if (!userId) throw new Error("Unauthorized");
+// ---- Budgets ----
 
-  const id = `${userId}_${budget.category}`;
-  const dbConfig = await readDb();
-  
-  const index = dbConfig.budgets.findIndex((b: any) => b.id === id && b.user_id === userId);
-  const newBudget = { id, user_id: userId, category: budget.category, limit_amount: budget.limit, color: budget.color, icon: budget.icon };
-  
-  if (index >= 0) dbConfig.budgets[index] = newBudget;
-  else dbConfig.budgets.push(newBudget);
-  
-  await writeDb(dbConfig);
+export async function saveBudget(budget: Budget): Promise<void> {
+  const list = readList<Budget>(KEYS.budgets);
+  const idx = list.findIndex(b => b.category === budget.category);
+  if (idx >= 0) list[idx] = budget;
+  else list.push(budget);
+  write(KEYS.budgets, list);
 }
 
-// Account Actions
-export async function saveAccount(acc: Account) {
-  const userId = await getUserId();
-  if (!userId) throw new Error("Unauthorized");
+// ---- Accounts ----
 
-  const dbConfig = await readDb();
-  const index = dbConfig.accounts.findIndex((a: any) => a.id === acc.id && a.user_id === userId);
-  const newAcc = { ...acc, user_id: userId };
-  
-  if (index >= 0) dbConfig.accounts[index] = newAcc;
-  else dbConfig.accounts.push(newAcc);
-  
-  await writeDb(dbConfig);
+export async function saveAccount(acc: Account): Promise<void> {
+  const list = readList<Account>(KEYS.accounts);
+  const idx = list.findIndex(a => a.id === acc.id);
+  if (idx >= 0) list[idx] = acc;
+  else list.push(acc);
+  write(KEYS.accounts, list);
 }
 
-export async function deleteAccount(id: string) {
-  const userId = await getUserId();
-  if (!userId) throw new Error("Unauthorized");
-
-  const dbConfig = await readDb();
-  dbConfig.accounts = dbConfig.accounts.filter((a: any) => !(a.id === id && a.user_id === userId));
-  await writeDb(dbConfig);
+export async function deleteAccountRecord(id: string): Promise<void> {
+  write(KEYS.accounts, readList<Account>(KEYS.accounts).filter(a => a.id !== id));
 }
 
-// Category Actions
-export async function saveCategory(cat: TransactionCategory) {
-  const userId = await getUserId();
-  if (!userId) throw new Error("Unauthorized");
+// ---- Categories ----
 
-  const dbConfig = await readDb();
-  const index = dbConfig.categories.findIndex((c: any) => c.id === cat.id && c.user_id === userId);
-  const newCat = { ...cat, user_id: userId };
-  
-  if (index >= 0) dbConfig.categories[index] = newCat;
-  else dbConfig.categories.push(newCat);
-  
-  await writeDb(dbConfig);
+export async function saveCategory(cat: TransactionCategory): Promise<void> {
+  const list = readList<TransactionCategory>(KEYS.categories);
+  const idx = list.findIndex(c => c.id === cat.id);
+  if (idx >= 0) list[idx] = cat;
+  else list.push(cat);
+  write(KEYS.categories, list);
 }
 
-export async function deleteCategory(id: string) {
-  const userId = await getUserId();
-  if (!userId) throw new Error("Unauthorized");
-
-  const dbConfig = await readDb();
-  dbConfig.categories = dbConfig.categories.filter((c: any) => !(c.id === id && c.user_id === userId));
-  await writeDb(dbConfig);
+export async function deleteCategoryRecord(id: string): Promise<void> {
+  write(KEYS.categories, readList<TransactionCategory>(KEYS.categories).filter(c => c.id !== id));
 }
 
-// Settings Actions
-export async function saveSettings(settings: UserSettings) {
-  const userId = await getUserId();
-  if (!userId) throw new Error("Unauthorized");
+// ---- Settings ----
 
-  const dbConfig = await readDb();
-  const index = dbConfig.settings.findIndex((s: any) => s.user_id === userId);
-  
-  const newSettings = {
-    user_id: userId,
-    name: settings.name,
-    email: settings.email,
-    notifyBudget: settings.notifyBudget ? 1 : 0,
-    notifySummary: settings.notifySummary ? 1 : 0,
-    theme: settings.theme,
-    language: settings.language || 'en',
-    currency: settings.currency || 'INR'
-  };
-  
-  if (index >= 0) dbConfig.settings[index] = newSettings;
-  else dbConfig.settings.push(newSettings);
-  
-  await writeDb(dbConfig);
+export async function saveSettings(settings: UserSettings): Promise<void> {
+  write(KEYS.settings, settings);
 }
 
-// Notification Actions
-export async function saveNotification(notif: AppNotification) {
-  const userId = await getUserId();
-  if (!userId) throw new Error("Unauthorized");
+// ---- Notifications ----
 
-  const dbConfig = await readDb();
-  const index = dbConfig.notifications.findIndex((n: any) => n.id === notif.id && n.user_id === userId);
-  const newNotif = { ...notif, user_id: userId, read: notif.read ? 1 : 0 };
-  
-  if (index >= 0) dbConfig.notifications[index] = newNotif;
-  else dbConfig.notifications.push(newNotif);
-  
-  await writeDb(dbConfig);
+export async function saveNotification(notif: AppNotification): Promise<void> {
+  const list = readList<AppNotification>(KEYS.notifications);
+  const idx = list.findIndex(n => n.id === notif.id);
+  if (idx >= 0) list[idx] = notif;
+  else list.push(notif);
+  write(KEYS.notifications, list);
 }
 
-export async function deleteNotifications() {
-  const userId = await getUserId();
-  if (!userId) throw new Error("Unauthorized");
+export async function deleteNotifications(): Promise<void> {
+  write(KEYS.notifications, []);
+}
 
-  const dbConfig = await readDb();
-  dbConfig.notifications = dbConfig.notifications.filter((n: any) => n.user_id !== userId);
-  await writeDb(dbConfig);
+// ---- Auth stubs (kept so any existing import doesn't break) ----
+
+export async function registerUser(formData: { name: string; email: string; password: string }) {
+  // No server — just return success. The context handles actual user state.
+  return { success: true, user: { id: 'local-user', name: formData.name, email: formData.email } };
+}
+
+export async function loginUser(formData: { email: string; password: string }) {
+  return { success: true, user: { id: 'local-user', email: formData.email } };
 }

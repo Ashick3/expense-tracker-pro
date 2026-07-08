@@ -59,13 +59,13 @@ export default function Dashboard() {
     });
 
     return last7Days.map(date => {
-      const dayTransactions = transactions.filter(tx => tx.date === date);
+      const dayTransactions = transactions.filter((tx: { date: string }) => tx.date === date);
       const dayIncome = dayTransactions
-        .filter(tx => tx.type === 'income')
-        .reduce((sum, tx) => sum + tx.amount, 0);
+        .filter((tx: { type: string }) => tx.type === 'income')
+        .reduce((sum: number, tx: { amount: number }) => sum + tx.amount, 0);
       const dayExpense = dayTransactions
-        .filter(tx => tx.type === 'expense')
-        .reduce((sum, tx) => sum + tx.amount, 0);
+        .filter((tx: { type: string }) => tx.type === 'expense')
+        .reduce((sum: number, tx: { amount: number }) => sum + tx.amount, 0);
       
       const label = new Date(date).toLocaleDateString('en-US', { weekday: 'short' });
       return { name: label, income: dayIncome, expense: dayExpense };
@@ -75,16 +75,16 @@ export default function Dashboard() {
   const pieData = useMemo(() => {
     const categoryTotals: Record<string, number> = {};
     transactions
-      .filter(tx => tx.type === 'expense')
-      .forEach(tx => {
+      .filter((tx: { type: string }) => tx.type === 'expense')
+      .forEach((tx: { category: string; amount: number }) => {
         categoryTotals[tx.category] = (categoryTotals[tx.category] || 0) + tx.amount;
       });
 
-    return budgets.map(b => ({
+    return budgets.map((b: { category: string; color: string }) => ({
       name: b.category,
       value: categoryTotals[b.category] || 0,
       color: b.color
-    })).filter(d => d.value > 0);
+    })).filter((d: { value: number }) => d.value > 0);
   }, [transactions, budgets]);
 
   if (!isLoaded) {
@@ -178,7 +178,7 @@ export default function Dashboard() {
                 <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
                     <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={8} dataKey="value">
-                      {pieData.map((entry, index) => (
+                      {pieData.map((entry: { color: string }, index: number) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
@@ -186,7 +186,7 @@ export default function Dashboard() {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className={styles.pieLegend}>
-                  {pieData.map((item) => (
+                  {pieData.map((item: { name: string; color: string; value: number }) => (
                     <div key={item.name} className={styles.legendItem}>
                       <span className={styles.dot} style={{ backgroundColor: item.color }} />
                       <span className={styles.name}>{item.name}</span>

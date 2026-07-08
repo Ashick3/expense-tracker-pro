@@ -3,8 +3,8 @@
 import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
 import { TrendingUp, Mail, Lock, ArrowRight, AlertCircle, Loader2 } from "lucide-react";
+import { loginUser } from "@/lib/actions";
 import { useToast } from "@/context/ToastContext";
 
 function LoginForm() {
@@ -23,20 +23,20 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      const res = await signIn("credentials", {
+      const result = await loginUser({
         email: formData.email,
         password: formData.password,
-        redirect: false,
       });
 
-      if (res?.error) {
-        const msg = res.error === "CredentialsSignin" ? "Invalid email or password" : res.error;
-        setError(msg);
-        showToast(msg, "error");
-      } else {
+      if (result?.success) {
+        localStorage.setItem("expense_pro_auth_user", JSON.stringify(result.user));
         showToast("Logged in successfully!", "success");
         router.push(callbackUrl);
         router.refresh();
+      } else {
+        const msg = "Invalid email or password";
+        setError(msg);
+        showToast(msg, "error");
       }
     } catch (err) {
       const msg = "An unexpected error occurred. Please try again.";

@@ -79,7 +79,7 @@ export default function Accounts() {
       </div>
 
       <div className={styles.grid}>
-        {accounts.map((acc) => {
+        {accounts.map((acc: Account) => {
           const Icon = ICON_MAP[acc.type] || Landmark;
           return (
             <div key={acc.id} className={`glass-card ${styles.accountCard}`} onClick={() => handleEditClick(acc)} style={{ cursor: 'pointer' }}>

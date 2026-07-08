@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Modal from '@/components/ui/Modal';
-import { useTransactions, TransactionType } from '@/context/TransactionContext';
+import { useTransactions } from '@/context/TransactionContext';
+import type { TransactionType } from '@/types/finance';
 import styles from './GlobalTransactionModal.module.css';
 
 export default function GlobalTransactionModal() {
@@ -118,7 +119,7 @@ export default function GlobalTransactionModal() {
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               required
             >
-              {categories.map(cat => (
+              {categories.map((cat: { id: string; name: string }) => (
                 <option key={cat.id} value={cat.name}>{cat.name}</option>
               ))}
             </select>

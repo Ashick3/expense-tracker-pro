@@ -1,7 +1,6 @@
 "use client";
 
-import { SessionProvider } from "next-auth/react";
-
+// next-auth removed — this component is now a transparent passthrough.
 export default function NextAuthProvider({ children }: { children: React.ReactNode }) {
-  return <SessionProvider>{children}</SessionProvider>;
+  return <>{children}</>;
 }

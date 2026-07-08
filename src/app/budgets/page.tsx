@@ -29,18 +29,18 @@ export default function Budgets() {
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
     return transactions
-      .filter(tx => {
+      .filter((tx: { date: string; type: string }) => {
         const d = new Date(tx.date);
         return tx.type === 'expense' && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
       })
-      .reduce((sum, tx) => sum + tx.amount, 0);
+      .reduce((sum: number, tx: { amount: number }) => sum + tx.amount, 0);
   }, [transactions]);
 
-  const totalLimit = useMemo(() => budgets.reduce((acc, curr) => acc + curr.limit, 0), [budgets]);
+  const totalLimit = useMemo(() => budgets.reduce((acc: number, curr: Budget) => acc + curr.limit, 0), [budgets]);
   
   const budgetStats = useMemo(() => {
     let onTrack = 0, overLimit = 0;
-    budgets.forEach(b => { const spent = getCategorySpending(b.category); if (spent > b.limit) overLimit++; else onTrack++; });
+    budgets.forEach((b: Budget) => { const spent = getCategorySpending(b.category); if (spent > b.limit) overLimit++; else onTrack++; });
     return { onTrack, overLimit };
   }, [budgets, getCategorySpending]);
 
@@ -116,7 +116,7 @@ export default function Budgets() {
       </div>
 
       <div className={styles.budgetsGrid}>
-        {budgets.map((budget) => {
+        {budgets.map((budget: Budget) => {
           const spent = getCategorySpending(budget.category);
           const progress = budget.limit > 0 ? (spent / budget.limit) * 100 : 0;
           const isOver = spent > budget.limit;

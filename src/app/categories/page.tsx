@@ -43,7 +43,7 @@ export default function Categories() {
     if (!formData.name) return;
     
     // Prevent duplicate exact names
-    if (!editingCategory && categories.some(c => c.name.toLowerCase() === formData.name.toLowerCase())) {
+    if (!editingCategory && categories.some((c: TransactionCategory) => c.name.toLowerCase() === formData.name.toLowerCase())) {
         alert("A category with this name already exists.");
         return;
     }
@@ -83,7 +83,7 @@ export default function Categories() {
       </div>
 
       <div className={styles.grid}>
-        {categories.map((cat) => {
+        {categories.map((cat: TransactionCategory) => {
           return (
             <div key={cat.id} className={`glass-card ${styles.categoryCard}`} onClick={() => handleEditClick(cat)} style={{ cursor: 'pointer' }}>
               <div className={styles.cardHeader}>

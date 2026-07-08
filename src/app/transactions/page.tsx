@@ -22,9 +22,9 @@ export default function Transactions() {
     return <TransactionsSkeleton />;
   }
   
-  const categories = ['All', ...Array.from(new Set(transactions.map(tx => tx.category)))];
+  const categories = ['All', ...Array.from(new Set(transactions.map((tx: { category: string }) => tx.category)))];
 
-  const filteredTransactions = transactions.filter(tx => {
+  const filteredTransactions = transactions.filter((tx: { name: string; category: string; date: string; type: string }) => {
     const matchesSearch = tx.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          tx.category.toLowerCase().includes(searchQuery.toLowerCase());
     let matchesDate = true;
@@ -95,7 +95,7 @@ export default function Transactions() {
           <div className={styles.filterGroup}>
             <Tag size={18} className={styles.filterIcon} />
             <select className={styles.filterSelect} value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
-              {categories.map(cat => (
+              {(categories as string[]).map((cat: string) => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>
@@ -126,7 +126,7 @@ export default function Transactions() {
           </thead>
           <tbody>
             {filteredTransactions.length > 0 ? (
-              filteredTransactions.map((tx) => (
+              filteredTransactions.map((tx: { id: string; type: string; name: string; category: string; date: string; amount: number }) => (
                 <tr key={tx.id} className={styles.row}>
                   <td>
                     <div className={styles.txNameCell}>

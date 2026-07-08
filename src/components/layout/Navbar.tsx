@@ -38,7 +38,7 @@ export default function Navbar() {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter((n: { read: boolean }) => !n.read).length;
 
   const mobileNavItems = [
     { icon: LayoutDashboard, label: t.nav.dashboard, href: '/' },
@@ -131,7 +131,7 @@ export default function Navbar() {
                     <p>No new notifications</p>
                   </div>
                 ) : (
-                  notifications.map(notif => (
+                  notifications.map((notif: { id: string; read: boolean; type: string; title: string; message: string; date: string }) => (
                     <div key={notif.id} className={`${styles.notifItem} ${!notif.read ? styles.unread : ''}`} onClick={() => markAsRead(notif.id)}>
                       <div className={styles.notifIconWrapper} data-type={notif.type}>
                         {notif.type === 'alert' && <AlertTriangle size={16} />}

@@ -17,13 +17,13 @@ import styles from './Sidebar.module.css';
 import Tooltip from '@/components/ui/Tooltip';
 import { useTransactions } from '@/context/TransactionContext';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useSession, signOut } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { isSidebarCollapsed } = useTransactions();
-  const { data: session } = useSession();
   const t = useTranslation();
+  const [user, setUser] = useState<{name?: string; email?: string} | null>(null);
 
   const menuItems = [
     { icon: LayoutDashboard, label: t.nav.dashboard, href: '/' },
@@ -35,8 +35,18 @@ export default function Sidebar() {
     { icon: Settings, label: t.nav.settings, href: '/settings' },
   ];
 
+  useEffect(() => {
+    try {
+      const savedUser = localStorage.getItem('expense_pro_auth_user');
+      if (savedUser) setUser(JSON.parse(savedUser));
+    } catch {
+      setUser(null);
+    }
+  }, []);
+
   const handleLogout = () => {
-    signOut({ callbackUrl: '/login' });
+    localStorage.removeItem('expense_pro_auth_user');
+    window.location.href = '/login';
   };
 
   return (
@@ -73,12 +83,12 @@ export default function Sidebar() {
       <div className={styles.footer}>
         <div className={styles.userProfile}>
           <div className={styles.avatar}>
-            {(session?.user?.name || 'U').charAt(0)}
+            {(user?.name || 'U').charAt(0)}
           </div>
           {!isSidebarCollapsed && (
             <div className={styles.userInfo}>
-              <p className={styles.userName}>{session?.user?.name}</p>
-              <p className={styles.userEmail}>{session?.user?.email}</p>
+              <p className={styles.userName}>{user?.name || 'User'}</p>
+              <p className={styles.userEmail}>{user?.email || ''}</p>
             </div>
           )}
         </div>

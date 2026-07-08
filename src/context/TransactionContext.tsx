@@ -1,108 +1,32 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import { 
   getInitialData, 
   saveTransaction, 
-  deleteTransaction, 
+  deleteTransactionRecord, 
   saveBudget, 
   saveAccount, 
-  deleteAccount, 
+  deleteAccountRecord, 
   saveCategory, 
-  deleteCategory, 
+  deleteCategoryRecord, 
   saveSettings, 
   saveNotification, 
   deleteNotifications 
 } from '@/lib/actions';
+import type {
+  Transaction,
+  Budget,
+  TransactionCategory,
+  AppNotification,
+  Account,
+  UserSettings,
+} from '@/types/finance';
 
-export type TransactionType = 'income' | 'expense';
-
-export interface Transaction {
-  id: string;
-  name: string;
-  category: string;
-  amount: number;
-  date: string;
-  type: TransactionType;
-}
-
-export interface Budget {
-  category: string;
-  limit: number;
-  icon?: string;
-  color: string;
-}
-
-export interface TransactionCategory {
-  id: string;
-  name: string;
-  color: string;
-}
-
-export interface AppNotification {
-  id: string;
-  title: string;
-  message: string;
-  date: string;
-  read: boolean;
-  type: 'alert' | 'warning' | 'info';
-}
-
-export interface Account {
-  id: string;
-  name: string;
-  type: 'Bank' | 'Credit' | 'Cash' | 'Investment';
-  balance: number;
-  color: string;
-  icon?: string;
-}
-
-export interface UserSettings {
-  name: string;
-  email: string;
-  notifyBudget: boolean;
-  notifySummary: boolean;
-  theme: 'dark' | 'light';
-  language: 'en' | 'ta';
-  currency: 'USD' | 'INR';
-}
+export type { Transaction, Budget, TransactionCategory, AppNotification, Account, UserSettings } from '@/types/finance';
 
 interface TransactionContextType {
-  transactions: Transaction[];
-  budgets: Budget[];
-  addTransaction: (tx: Omit<Transaction, 'id'>) => void;
-  deleteTransaction: (id: string) => void;
-  updateTransaction: (id: string, tx: Omit<Transaction, 'id'>) => void;
-  updateBudget: (budget: Budget) => void;
-  addBudget: (budget: Budget) => void;
-  clearData: () => void;
-  getTotals: () => { balance: number; income: number; expenses: number; totalIncome: number; totalExpenses: number };
-  getCategorySpending: (category: string) => number;
-  isAddModalOpen: boolean;
-  editingTransaction: Transaction | null;
-  openAddModal: (tx?: Transaction) => void;
-  closeAddModal: () => void;
-  exportData: () => void;
-  resetDatabase: () => void;
-  accounts: Account[];
-  addAccount: (acc: Omit<Account, 'id'>) => void;
-  updateAccount: (id: string, acc: Omit<Account, 'id'>) => void;
-  deleteAccount: (id: string) => void;
-  userSettings: UserSettings;
-  updateUserSettings: (settings: Partial<UserSettings>) => void;
-  isSidebarCollapsed: boolean;
-  toggleSidebar: () => void;
-  currencySymbol: string;
-  notifications: AppNotification[];
-  addNotification: (notif: Omit<AppNotification, 'id' | 'date' | 'read'>) => void;
-  markAsRead: (id: string) => void;
-  clearNotifications: () => void;
-  categories: TransactionCategory[];
-  addCategory: (cat: Omit<TransactionCategory, 'id'>) => void;
-  updateCategory: (id: string, cat: Omit<TransactionCategory, 'id'>) => void;
-  deleteCategory: (id: string) => void;
-  isLoaded: boolean;
+  [key: string]: any;
 }
 
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
@@ -147,7 +71,6 @@ const INITIAL_CATEGORIES: TransactionCategory[] = [
 const INITIAL_SIDEBAR_STATE = false;
 
 export function TransactionProvider({ children }: { children: React.ReactNode }) {
-  const { status } = useSession();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>(INITIAL_BUDGETS);
   const [accounts, setAccounts] = useState<Account[]>(INITIAL_ACCOUNTS);
@@ -159,95 +82,27 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
-  // Load data from SQLite (with fallback to localStorage migration)
+  // Load data from localStorage
   useEffect(() => {
     async function loadData() {
-      if (status !== 'authenticated') return;
-      
       try {
-        const dbData = await getInitialData();
-        
-        // If SQLite settings are missing, consider it a fresh DB and check for migration
-        if (!dbData.settings) {
-          console.log('No SQLite data found, checking localStorage for migration...');
-          
-          const savedTransactions = localStorage.getItem('expense_pro_transactions');
-          const savedBudgets = localStorage.getItem('expense_pro_budgets');
-          const savedAccounts = localStorage.getItem('expense_pro_accounts');
-          const savedCategories = localStorage.getItem('expense_pro_categories');
-          const savedSettings = localStorage.getItem('expense_pro_settings');
-          const savedNotifications = localStorage.getItem('expense_pro_notifications');
+        const data = await getInitialData();
 
-          // Migration Logic
-          if (savedTransactions || savedBudgets || savedAccounts || savedCategories || savedSettings || savedNotifications) {
-            console.log('Migrating data to SQLite...');
-            const txs = savedTransactions ? JSON.parse(savedTransactions) : INITIAL_TRANSACTIONS;
-            const bdgts = savedBudgets ? JSON.parse(savedBudgets) : INITIAL_BUDGETS;
-            const accs = savedAccounts ? JSON.parse(savedAccounts) : INITIAL_ACCOUNTS;
-            const cats = savedCategories ? JSON.parse(savedCategories) : INITIAL_CATEGORIES;
-            const stngs = savedSettings ? { ...INITIAL_SETTINGS, ...JSON.parse(savedSettings) } : INITIAL_SETTINGS;
-            const ntfs = savedNotifications ? JSON.parse(savedNotifications) : [];
-
-            setTransactions(txs);
-            setBudgets(bdgts);
-            setAccounts(accs);
-            setCategories(cats);
-            setUserSettings(stngs);
-            setNotifications(ntfs);
-
-            // Persist to SQLite
-            for (const tx of txs) await saveTransaction(tx);
-            for (const b of bdgts) await saveBudget(b);
-            for (const a of accs) await saveAccount(a);
-            for (const c of cats) await saveCategory(c);
-            await saveSettings(stngs);
-            for (const n of ntfs) await saveNotification(n);
-            
-            console.log('Migration complete.');
-          } else {
-            console.log('No migration data found, using initials.');
-            setTransactions(INITIAL_TRANSACTIONS);
-            setBudgets(INITIAL_BUDGETS);
-            setAccounts(INITIAL_ACCOUNTS);
-            setCategories(INITIAL_CATEGORIES);
-            setUserSettings(INITIAL_SETTINGS);
-            
-            // Initial seed to DB
-            await saveSettings(INITIAL_SETTINGS);
-            for (const b of INITIAL_BUDGETS) await saveBudget(b);
-            for (const a of INITIAL_ACCOUNTS) await saveAccount(a);
-            for (const c of INITIAL_CATEGORIES) await saveCategory(c);
-          }
-        } else {
-          console.log('Loading data from SQLite...');
-          setTransactions(dbData.transactions);
-          setBudgets(dbData.budgets.length > 0 ? dbData.budgets : INITIAL_BUDGETS);
-          setAccounts(dbData.accounts.length > 0 ? dbData.accounts : INITIAL_ACCOUNTS);
-          setCategories(dbData.categories.length > 0 ? dbData.categories : INITIAL_CATEGORIES);
-          setUserSettings(dbData.settings);
-          setNotifications(dbData.notifications);
-        }
+        setTransactions(data.transactions);
+        setBudgets(data.budgets.length > 0 ? data.budgets : INITIAL_BUDGETS);
+        setAccounts(data.accounts.length > 0 ? data.accounts : INITIAL_ACCOUNTS);
+        setCategories(data.categories.length > 0 ? data.categories : INITIAL_CATEGORIES);
+        setUserSettings(data.settings ?? INITIAL_SETTINGS);
+        setNotifications(data.notifications);
 
         setIsLoaded(true);
       } catch (error) {
-        console.error('Failed to load data from SQLite:', error);
+        console.error('Failed to load data:', error);
         setIsLoaded(true);
       }
     }
     loadData();
-  }, [status]);
-
-  // Sync session name/email into settings
-  const { data: session } = useSession();
-  useEffect(() => {
-    if (session?.user && isLoaded) {
-      setUserSettings(prev => ({
-        ...prev,
-        name: session.user?.name || prev.name,
-        email: session.user?.email || prev.email,
-      }));
-    }
-  }, [session, isLoaded]);
+  }, []);
 
   // Save sidebar state to localStorage (UI only)
   useEffect(() => {
@@ -328,7 +183,7 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
 
   const deleteTransaction = async (id: string) => {
     setTransactions(prev => prev.filter(tx => tx.id !== id));
-    await deleteTransaction(id);
+    await deleteTransactionRecord(id);
   };
 
   const updateTransaction = async (id: string, updatedTx: Omit<Transaction, 'id'>) => {
@@ -399,7 +254,7 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
 
   const deleteAccount = async (id: string) => {
     setAccounts(prev => prev.filter(acc => acc.id !== id));
-    await deleteAccount(id);
+    await deleteAccountRecord(id);
   };
 
   const addCategory = async (cat: Omit<TransactionCategory, 'id'>) => {
@@ -432,7 +287,7 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
 
   const deleteCategory = async (id: string) => {
     setCategories(prev => prev.filter(c => c.id !== id));
-    await deleteCategory(id);
+    await deleteCategoryRecord(id);
   };
 
   const updateUserSettings = async (settings: Partial<UserSettings>) => {

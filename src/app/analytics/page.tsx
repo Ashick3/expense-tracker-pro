@@ -38,13 +38,13 @@ export default function Analytics() {
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
     transactions
-      .filter(tx => {
+      .filter((tx: { date: string; type: string; category: string; amount: number }) => {
         const d = new Date(tx.date);
         return tx.type === 'expense' && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
       })
-      .forEach(tx => { totals[tx.category] = (totals[tx.category] || 0) + tx.amount; });
+      .forEach((tx: { category: string; amount: number }) => { totals[tx.category] = (totals[tx.category] || 0) + tx.amount; });
     return Object.entries(totals).map(([name, value]) => ({
-      name, value, color: budgets.find(b => b.category === name)?.color || 'var(--primary)'
+      name, value, color: budgets.find((b: { category: string; color?: string }) => b.category === name)?.color || 'var(--primary)'
     })).sort((a, b) => b.value - a.value);
   }, [transactions, budgets]);
 
@@ -55,8 +55,8 @@ export default function Analytics() {
       return d.toISOString().split('T')[0];
     });
     return days.map(date => {
-      const dayTxs = transactions.filter(tx => tx.date === date && tx.type === 'expense');
-      const total = dayTxs.reduce((sum, tx) => sum + tx.amount, 0);
+      const dayTxs = transactions.filter((tx: { date: string; type: string; amount: number }) => tx.date === date && tx.type === 'expense');
+      const total = dayTxs.reduce((sum: number, tx: { amount: number }) => sum + tx.amount, 0);
       return { date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), amount: total };
     });
   }, [transactions]);
